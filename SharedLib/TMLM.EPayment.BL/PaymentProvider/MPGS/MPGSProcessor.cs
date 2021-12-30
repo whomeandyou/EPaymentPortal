@@ -41,7 +41,7 @@ namespace TMLM.EPayment.BL.PaymentProvider.MPGS
                     repoPaymentTransaction.InsertPaymentTransaction(model.TransactionNumber, model.Currency, model.Amount,
                         model.OrderNumber, applicationAccount.Id, model.ReturnUrl, MPGSSettings.MERCHANT_ID,
                         PaymentProviderType.MPGS.ToString(), isEnrolment: model.IsEnrolment,
-                        isInitialPayment: model.IsInitialPayment);
+                        isInitialPayment: model.IsInitialPayment, paymentRef: model.PaymentRef);
                 }
 
                 result.Code = ResponseReturnCode.Gen_Success;

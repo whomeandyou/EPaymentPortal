@@ -226,7 +226,8 @@ namespace TMLM.EForm.Web.Controllers
                     ReturnUrl = gatewayApiRequest.ReturnUrl,
                     AdditionalInfo = gatewayApiRequest.OrderDescription,
                     IsEnrolment = gatewayApiRequest.IsEnrolment,
-                    IsInitialPayment = gatewayApiRequest.IsInitialPayment
+                    IsInitialPayment = gatewayApiRequest.IsInitialPayment,
+                    PaymentRef = gatewayApiRequest.PaymentRef
                 });
 
                 if (initiateResult.Code != ResponseReturnCode.Gen_Success)
