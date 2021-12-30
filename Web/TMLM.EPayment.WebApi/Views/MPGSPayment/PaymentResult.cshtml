@@ -1,0 +1,37 @@
+﻿@using TMLM.EPayment.BL.Data.MPGSPayment
+@model ResponseToMerchant
+
+@{
+    /**/
+
+    ViewBag.Title = "PaymentResult";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<html>
+
+<body onload='document.forms[0].submit()'>
+    <form action='@Model.ReturnURL' method='post'>
+
+        <input type='hidden' name='AmountPaid' value='@Model.AmountPaid'>
+        <input type='hidden' name='IsSuccess' value='@Model.IsSuccess.ToString()'>
+        <input type='hidden' name='TransCode' value='@Model.TransCode'>
+        <input type='hidden' name='AppId' value='@Model.AppId'>
+        <input type='hidden' name='AuthCode' value='@Model.AuthCode'>
+        <input type='hidden' name='BankName' value='@Model.BankName'>
+        <input type='hidden' name='CardMethod' value='@Model.CardMethod'>
+        <input type='hidden' name='CardType' value='@Model.CardType'>
+        <input type='hidden' name='CCNumber' value='@Model.CCNumber'>
+        <input type='hidden' name='ExpiryMonth' value='@Model.ExpiryMonth'>
+        <input type='hidden' name='ExpiryYear' value='@Model.ExpiryYear'>
+        <input type='hidden' name='ResponseCode' value='@Model.ResponseCode'>
+        <input type='hidden' name='ErrorMessage' value='@Model.ErrorMessage'>
+        <input type='hidden' name='IsEnrolment' value='@Model.IsEnrolment'>
+        <input type='hidden' name='isInitialPayment' value='@Model.IsInitialPayment'>
+        <input type='hidden' name='IsDifferentRenewalMethod' value='@Model.IsDifferentRenewalMethod.ToString()'>
+        <input type='hidden' name='PaymentRef' value='@Model.PaymentRef'>
+        <input type='hidden' name='msgSign' value='@Model.msgSign'>
+    </form>
+</body>
+
+</html>

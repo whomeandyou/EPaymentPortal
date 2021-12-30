@@ -1,0 +1,162 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{071381C7-8EE1-4063-9368-1ACE28BDDC9D}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>TMLM.EPayment.BL</RootNamespace>
+    <AssemblyName>TMLM.EPayment.BL</AssemblyName>
+    <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="AutoMapper, Version=7.0.1.0, Culture=neutral, PublicKeyToken=be96cd2c38ef1005, processorArchitecture=MSIL">
+      <HintPath>..\..\Web\packages\AutoMapper.7.0.1\lib\net45\AutoMapper.dll</HintPath>
+    </Reference>
+    <Reference Include="Dapper, Version=1.60.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\Web\packages\Dapper.1.60.6\lib\net451\Dapper.dll</HintPath>
+    </Reference>
+    <Reference Include="HtmlAgilityPack, Version=1.11.36.0, Culture=neutral, PublicKeyToken=bd319b19eaf3b43a, processorArchitecture=MSIL">
+      <HintPath>..\..\Web\packages\HtmlAgilityPack.1.11.36\lib\Net45\HtmlAgilityPack.dll</HintPath>
+    </Reference>
+    <Reference Include="log4net, Version=2.0.8.0, Culture=neutral, PublicKeyToken=669e0ddf0bb1aa2a, processorArchitecture=MSIL">
+      <HintPath>..\..\Web\packages\log4net.2.0.8\lib\net45-full\log4net.dll</HintPath>
+    </Reference>
+    <Reference Include="Newtonsoft.Json, Version=12.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\..\Web\packages\Newtonsoft.Json.12.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Configuration" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.Transactions" />
+    <Reference Include="System.Web" />
+    <Reference Include="System.Web.Extensions" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Xml" />
+    <Reference Include="TMLM.Security, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\ExtDlls\TMLM.Security.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Authentication\HashAuthentication.cs" />
+    <Compile Include="Data\DropDownListModel.cs" />
+    <Compile Include="Data\EMandate\EmandateDecryptInputModel.cs" />
+    <Compile Include="Data\EMandate\EmandateDecryptOutputModel.cs" />
+    <Compile Include="Data\EMandate\EMandateDefaults.cs" />
+    <Compile Include="Data\FPXPayment\FpxDecryptInputModel.cs" />
+    <Compile Include="Data\FPXPayment\FpxDecryptOutputModel.cs" />
+    <Compile Include="Data\MPGSPayment\BankModel.cs" />
+    <Compile Include="Data\MPGSPayment\BatchPaymentRequestModel.cs" />
+    <Compile Include="Data\MPGSPayment\CheckoutSessionModel.cs" />
+    <Compile Include="Data\MPGSPayment\Inquiry3dsAuthenticationInfoResponseModel.cs" />
+    <Compile Include="Data\MPGSPayment\PayEnrollmentResponseModel.cs" />
+    <Compile Include="Data\MPGSPayment\ResponseToMerchant.cs" />
+    <Compile Include="Data\MPGSPayment\SecureIdEnrollmentResponseModel.cs" />
+    <Compile Include="Data\MPGSPayment\VoidPaymentResponseModel.cs" />
+    <Compile Include="Data\OutputModel.cs" />
+    <Compile Include="Data\PaymentProvider\GetPaymentInfoModel.cs" />
+    <Compile Include="Data\PaymentProvider\InquiryPaymentModel.cs" />
+    <Compile Include="Data\PaymentProvider\InitiatePaymentModel.cs" />
+    <Compile Include="Data\PaymentProvider\UpdateEnrollmentInformation.cs" />
+    <Compile Include="Data\PaymentProvider\UpdatePaymentInformationModel.cs" />
+    <Compile Include="Data\PaymentProvider\ProcessPaymentModel.cs" />
+    <Compile Include="Data\FPXPayment\BankListModel.cs" />
+    <Compile Include="Data\PaymentProvider\GetHtmlModel.cs" />
+    <Compile Include="Data\RazerPay\InquiryRequestInputModel.cs" />
+    <Compile Include="Data\RazerPay\PaymentRequestInputModel.cs" />
+    <Compile Include="Data\RazerPay\PaymentResponseInputModel.cs" />
+    <Compile Include="Data\RazerPay\PaymentResponseOutputModel.cs" />
+    <Compile Include="Data\RazerPay\RazerPayDecryptOutputModel.cs" />
+    <Compile Include="Data\RazerPay\RazerPayInquiryResponse.cs" />
+    <Compile Include="Data\RazerPay\RequestHTMLModel.cs" />
+    <Compile Include="Gateway\ApiClient.cs" />
+    <Compile Include="Gateway\ApiRequest.cs" />
+    <Compile Include="Helpers\DecryptFPXHepler.cs" />
+    <Compile Include="Helpers\RandomHelper.cs" />
+    <Compile Include="Helpers\DictHelper.cs" />
+    <Compile Include="Helpers\JsonHelper.cs" />
+    <Compile Include="PaymentProvider\FPX\EMandateProcessor.cs" />
+    <Compile Include="PaymentProvider\FPX\EMandateSettings.cs" />
+    <Compile Include="PaymentProvider\MPGS\MPGSProcessor.cs" />
+    <Compile Include="PaymentProvider\MPGS\MPGSSettings.cs" />
+    <Compile Include="PaymentProvider\MPGS\MPGSUtilities.cs" />
+    <Compile Include="PaymentProvider\MPGS\GatewayApiConfig.cs" />
+    <Compile Include="PaymentProvider\MPGS\GatewayApiRequest.cs" />
+    <Compile Include="PaymentProvider\FPX\FPXUtilities.cs" />
+    <Compile Include="PaymentProvider\PaymentProvicerFactory.cs" />
+    <Compile Include="PaymentProvider\PaymentResponseCode.cs" />
+    <Compile Include="PaymentProvider\PaymentProviders.cs" />
+    <Compile Include="PaymentProvider\RazerPay\RazerPayProcessor.cs" />
+    <Compile Include="PaymentProvider\RazerPay\RazerPaySettings.cs" />
+    <Compile Include="PaymentProvider\RazerPay\RazerPayUtilities.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="PaymentProvider\FPX\FPXSettings.cs" />
+    <Compile Include="PaymentProvider\FPX\FPXProcessor.cs" />
+    <Compile Include="Service\ApplicationAccountService.cs" />
+    <Compile Include="Service\EMandateTransactionService.cs" />
+    <Compile Include="Service\LAFpxBankService.cs" />
+    <Compile Include="Service\FPXLogServie.cs" />
+    <Compile Include="Service\MPGSLogService.cs" />
+    <Compile Include="Service\PaymentSettings.cs" />
+    <Compile Include="Service\PaymentService.cs" />
+    <Compile Include="Service\BankService.cs" />
+    <Compile Include="PaymentProvider\IPaymentProcessor.cs" />
+    <Compile Include="PaymentProvider\MPGS\IdUtils.cs" />
+    <Compile Include="Service\PaymentTransactionService.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\TMLM.Common\TMLM.Common.csproj">
+      <Project>{79ccf9ea-248b-42b8-914b-5932ce683f0f}</Project>
+      <Name>TMLM.Common</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\TMLM.EPayment.Db\TMLM.EPayment.Db.csproj">
+      <Project>{7D96F852-7E51-4AAF-A1FA-A00078511B50}</Project>
+      <Name>TMLM.EPayment.Db</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\TMLM.log4net\TMLM.CustomLog4Net.csproj">
+      <Project>{6876c20c-fa31-4e38-94a5-48f18b5a07e0}</Project>
+      <Name>TMLM.CustomLog4Net</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config">
+      <SubType>Designer</SubType>
+    </None>
+  </ItemGroup>
+  <ItemGroup />
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

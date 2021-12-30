@@ -1,0 +1,73 @@
+﻿.mandatory::after {
+    content: "*";
+    color: red;
+}
+
+.textlarge {
+    font-size : 18px;
+}
+
+.centered {
+    position: relative;
+   width : 900px;
+    display: inline-block;
+}
+
+body {
+    margin: 10px 200px 10px 200px;
+    padding: 0px 20px 0px 20px;
+    height: 100%;
+}
+
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+button {
+    margin: 3px;
+}
+
+#dialog-ok {
+    display: none;
+}
+
+.ui-dialog-titlebar-close {
+    visibility: hidden;
+}
+
+#loadingDiv {
+    background: #ffffff;
+    color: #666666;
+    position: fixed;
+    height: 100%;
+    width: 100%;
+    z-index: 5000;
+    top: 0;
+    left: 0;
+    float: left;
+    text-align: center;
+    padding-top: 25%;
+    opacity: .80;
+}
+
+.spinner {
+    margin: 0 auto;
+    height: 64px;
+    width: 64px;
+    animation: rotate 0.8s infinite linear;
+    border: 5px solid firebrick;
+    border-right-color: transparent;
+    border-radius: 50%;
+}
+
+@keyframes rotate {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}

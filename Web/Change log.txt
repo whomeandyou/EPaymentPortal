@@ -1,0 +1,2420 @@
+11-11-2021 - Batch payment enhancement
+=============================================================================================================
+IF NOT EXISTS(SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS
+				WHERE TABLE_NAME = 'BatchProcess'
+				AND COLUMN_NAME = 'StatusId')
+		BEGIN
+			ALTER TABLE BatchProcess ADD StatusId int
+			PRINT '<< BatchProcess.StatusId Added >>'
+		END
+ELSE
+		PRINT '<< BatchProcess.StatusId already exists >>'
+
+		GO
+
+		IF NOT EXISTS(SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS
+				WHERE TABLE_NAME = 'BatchProcess'
+				AND COLUMN_NAME = 'ProcessingStatus')
+		BEGIN
+			ALTER TABLE BatchProcess ADD ProcessingStatus varchar(10)
+			PRINT '<< BatchProcess.ProcessingStatus Added >>'
+		END
+ELSE
+		PRINT '<< BatchProcess.ProcessingStatus already exists >>'
+
+		GO
+
+				IF NOT EXISTS(SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS
+				WHERE TABLE_NAME = 'BatchProcess'
+				AND COLUMN_NAME = 'IsRecurringBatch')
+		BEGIN
+			ALTER TABLE BatchProcess ADD IsRecurringBatch bit
+			PRINT '<< BatchProcess.IsRecurringBatch Added >>'
+		END
+ELSE
+		PRINT '<< BatchProcess.IsRecurringBatch already exists >>'
+
+		GO
+
+				IF NOT EXISTS(SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS
+				WHERE TABLE_NAME = 'BatchProcess'
+				AND COLUMN_NAME = 'UrlGuId')
+		BEGIN
+			ALTER TABLE BatchProcess ADD UrlGuId varchar(1000)
+			PRINT '<< BatchProcess.UrlGuId Added >>'
+		END
+ELSE
+		PRINT '<< BatchProcess.UrlGuId already exists >>'
+
+		GO
+
+
+				IF NOT EXISTS(SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS
+				WHERE TABLE_NAME = 'BatchProcess'
+				AND COLUMN_NAME = 'BatchData')
+		BEGIN
+			alter table BatchProcess add BatchData nvarchar(4000)
+			PRINT '<< BatchProcess.BatchData Added >>'
+		END
+ELSE
+		PRINT '<< BatchProcess.BatchData already exists >>'
+
+		GO
+		
+				IF NOT EXISTS(SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS
+				WHERE TABLE_NAME = 'BatchProcess'
+				AND COLUMN_NAME = 'DataContent')
+		BEGIN
+			alter table BatchProcess add DataContent nvarchar(4000)
+			PRINT '<< BatchProcess.DataContent Added >>'
+		END
+ELSE
+		PRINT '<< BatchProcess.DataContent already exists >>'
+
+		GO
+
+
+
+11-11-2021 - razerpay enhancement 
+=============================================================================================================
+IF NOT EXISTS(SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS
+				WHERE TABLE_NAME = 'PaymentTransaction'
+				AND COLUMN_NAME = 'BuyerName')
+		BEGIN
+			alter table PaymentTransaction add BuyerName nvarchar(300)
+			PRINT '<< PaymentTransaction.BuyerName Added >>'
+		END
+ELSE
+		PRINT '<< PaymentTransaction.BuyerName already exists >>'
+
+		GO
+
+		IF NOT EXISTS(SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS
+				WHERE TABLE_NAME = 'PaymentTransaction'
+				AND COLUMN_NAME = 'Description')
+		BEGIN
+			alter table PaymentTransaction add Description nvarchar(1000)
+			PRINT '<< PaymentTransaction.Description Added >>'
+		END
+ELSE
+		PRINT '<< PaymentTransaction.Description already exists >>'
+
+		GO
+
+		IF NOT EXISTS(SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS
+				WHERE TABLE_NAME = 'PaymentTransaction'
+				AND COLUMN_NAME = 'Channel')
+		BEGIN
+			alter table PaymentTransaction add Channel nvarchar(100)
+			PRINT '<< PaymentTransaction.Channel Added >>'
+		END
+ELSE
+		PRINT '<< PaymentTransaction.Channel already exists >>'
+
+		GO
+
+				IF NOT EXISTS(SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS
+				WHERE TABLE_NAME = 'PaymentTransaction'
+				AND COLUMN_NAME = 'BuyerContact')
+		BEGIN
+			alter table PaymentTransaction add BuyerContact nvarchar(100)
+			PRINT '<< PaymentTransaction.BuyerContact Added >>'
+		END
+ELSE
+		PRINT '<< PaymentTransaction.BuyerContact already exists >>'
+
+		GO
+
+						IF NOT EXISTS(SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS
+				WHERE TABLE_NAME = 'PaymentTransaction'
+				AND COLUMN_NAME = 'CancelUrl')
+		BEGIN
+			alter table PaymentTransaction add CancelUrl nvarchar(1000)
+			PRINT '<< PaymentTransaction.CancelUrl Added >>'
+		END
+ELSE
+		PRINT '<< PaymentTransaction.CancelUrl already exists >>'
+
+		GO
+
+
+
+				IF NOT EXISTS(SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS
+				WHERE TABLE_NAME = 'ApplicationAccount'
+				AND COLUMN_NAME = 'RazerPayPublicKey')
+		BEGIN
+			alter table ApplicationAccount add RazerPayPublicKey nvarchar(500)
+			PRINT '<< ApplicationAccount.RazerPayPublicKey Added >>'
+		END
+ELSE
+		PRINT '<< ApplicationAccount.RazerPayPublicKey already exists >>'
+
+		GO
+
+				IF NOT EXISTS(SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS
+				WHERE TABLE_NAME = 'ApplicationAccount'
+				AND COLUMN_NAME = 'RazerPayPrivateKey')
+		BEGIN
+			alter table ApplicationAccount add RazerPayPrivateKey nvarchar(500)
+			PRINT '<< ApplicationAccount.RazerPayPrivateKey Added >>'
+		END
+ELSE
+		PRINT '<< ApplicationAccount.RazerPayPrivateKey already exists >>'
+
+		GO
+
+				IF NOT EXISTS(SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS
+				WHERE TABLE_NAME = 'ApplicationAccount'
+				AND COLUMN_NAME = 'RazerPayMerchantId')
+		BEGIN
+			alter table ApplicationAccount add RazerPayMerchantId nvarchar(500)
+			PRINT '<< ApplicationAccount.RazerPayMerchantId Added >>'
+		END
+ELSE
+		PRINT '<< ApplicationAccount.RazerPayMerchantId already exists >>'
+
+		GO
+
+IF NOT EXISTS (SELECT 1 FROM sys.objects 
+WHERE object_id = OBJECT_ID(N'[dbo].[RazerPayLog]') AND type in (N'U'))
+begin
+CREATE TABLE [dbo].[RazerPayLog](
+	[Id] [int] IDENTITY(1,1) NOT NULL,
+	[CreatedOn] [datetime] NULL,
+	[OrderNo] [nvarchar](30) NULL,
+	[URL] [nvarchar](100) NULL,
+	[Request] [nvarchar](4000) NULL,
+	[Response] [nvarchar](4000) NULL
+	);
+PRINT '<< Successful Add table [RazerPayLog] >>';
+END
+ELSE
+PRINT '<< Table [RazerPayLog] already exist >>';
+GO
+
+IF OBJECT_ID('dbo.spInsert_PaymentTransaction') IS NOT NULL
+BEGIN
+    DROP PROCEDURE dbo.spInsert_PaymentTransaction
+    IF OBJECT_ID('dbo.spInsert_PaymentTransaction') IS NOT NULL
+        PRINT '<< FAILED DROP PROCEDURE dbo.spInsert_PaymentTransaction >>'
+    ELSE
+        PRINT '<< SUCCESS DROP PROCEDURE dbo.spInsert_PaymentTransaction >>'
+END
+GO
+
+CREATE PROCEDURE [dbo].[spInsert_PaymentTransaction]
+	@ApplicationAccountId int,
+	@Amount decimal(10,2),
+	@TransactionNumber nvarchar(50),
+	@OrderNumber nvarchar(50),
+	@ReturnUrl nvarchar(1000),
+	@MerchantId nvarchar(50),
+	@PaymentProviderCode nvarchar(50),
+	@Currency nvarchar(50),
+	@IsEnrolment bit,
+	@IsInitialPayment bit,
+	@Mode int,
+	@PaymentRef nvarchar(50),
+	@TransactionStatusId int,
+	@BuyerName nvarchar(300),
+	@BuyerContact nvarchar(100),
+	@BuyerEmail nvarchar(500),
+	@Description nvarchar(1000),
+	@CancelUrl nvarchar(2000)
+
+AS
+Begin
+			insert into PaymentTransaction(
+				CreatedOn,
+				ApplicationAccountId,
+				Amount,
+				TransactionNumber,
+				ReturnUrl,
+				OrderNumber,
+				MerchantId,
+				PaymentProviderCode,
+				Currency,
+				IsEnrolment,
+				IsInitialPayment,
+				Mode,
+				ProposalId,
+				TransactionStatusId,
+				BuyerEmail,
+				BuyerName,
+				BuyerContact,
+				Description,
+				CancelUrl
+			)
+			Values(
+				GETDATE(),
+				@ApplicationAccountId,
+				@Amount,
+				@TransactionNumber,
+				@ReturnUrl,
+				@OrderNumber,
+				@MerchantId,
+				@PaymentProviderCode,
+				@Currency,
+				@IsEnrolment,
+				@IsInitialPayment,
+				@Mode,
+				@PaymentRef,
+				@TransactionStatusId,
+				@BuyerEmail,
+				@BuyerName,
+				@BuyerContact,
+				@Description,
+				@CancelUrl
+				);
+			End
+
+GO
+IF OBJECT_ID('dbo.spInsert_PaymentTransaction') IS NOT NULL
+    PRINT '<< CREATED Store Procedure dbo.spInsert_PaymentTransaction >>'
+ELSE
+    PRINT '<< FAILED CREATE Store Procedure dbo.spInsert_PaymentTransaction >>'
+
+GO
+
+IF OBJECT_ID('dbo.spInsert_RazerPayLog') IS NOT NULL
+BEGIN
+    DROP PROCEDURE dbo.spInsert_RazerPayLog
+    IF OBJECT_ID('dbo.spInsert_RazerPayLog') IS NOT NULL
+        PRINT '<< FAILED DROP PROCEDURE dbo.spInsert_RazerPayLog >>'
+    ELSE
+        PRINT '<< SUCCESS DROP PROCEDURE dbo.spInsert_RazerPayLog >>'
+END
+GO
+
+CREATE PROCEDURE [dbo].[spInsert_RazerPayLog]
+	@OrderNo nvarchar(30),
+	@URL nvarchar(30),
+	@Request nvarchar(4000),
+	@Response nvarchar(4000)
+	
+
+AS
+Begin
+			insert into RazerPayLog(
+				CreatedOn,
+				OrderNo,
+				URL,
+				Request,
+				Response
+			)
+			Values(
+				GETDATE(),
+				@OrderNo,
+				@URL,
+				@Request,
+				@Response
+				);
+			End
+
+GO
+IF OBJECT_ID('dbo.spInsert_RazerPayLog') IS NOT NULL
+    PRINT '<< CREATED Store Procedure dbo.spInsert_RazerPayLog >>'
+ELSE
+    PRINT '<< FAILED CREATE Store Procedure dbo.spInsert_RazerPayLog >>'
+
+
+GO
+
+IF OBJECT_ID('dbo.spUpdate_InquiryReturnUrl') IS NOT NULL
+BEGIN
+    DROP PROCEDURE dbo.spUpdate_InquiryReturnUrl
+    IF OBJECT_ID('dbo.spUpdate_InquiryReturnUrl') IS NOT NULL
+        PRINT '<< FAILED DROP PROCEDURE dbo.spUpdate_InquiryReturnUrl >>'
+    ELSE
+        PRINT '<< SUCCESS DROP PROCEDURE dbo.spUpdate_InquiryReturnUrl >>'
+END
+GO
+
+CREATE PROCEDURE [dbo].[spUpdate_InquiryReturnUrl]
+	@OrderId nvarchar(50) = null,
+	@ReturnUrl nvarchar(1000) = null
+AS
+Begin
+			update PaymentTransaction set 
+			[InquiryReturnUrl] = @ReturnUrl
+			where OrderNumber = @OrderId
+			End
+
+
+GO
+IF OBJECT_ID('dbo.spUpdate_InquiryReturnUrl') IS NOT NULL
+    PRINT '<< CREATED Store Procedure dbo.spUpdate_InquiryReturnUrl >>'
+ELSE
+    PRINT '<< FAILED CREATE Store Procedure dbo.spUpdate_InquiryReturnUrl >>'
+
+
+GO
+
+IF OBJECT_ID('dbo.spUpdate_PaymentTransaction_TransactionStatus') IS NOT NULL
+BEGIN
+    DROP PROCEDURE dbo.spUpdate_PaymentTransaction_TransactionStatus
+    IF OBJECT_ID('dbo.spUpdate_PaymentTransaction_TransactionStatus') IS NOT NULL
+        PRINT '<< FAILED DROP PROCEDURE dbo.spUpdate_PaymentTransaction_TransactionStatus >>'
+    ELSE
+        PRINT '<< SUCCESS DROP PROCEDURE dbo.spUpdate_PaymentTransaction_TransactionStatus >>'
+END
+GO
+
+Create PROCEDURE [dbo].[spUpdate_PaymentTransaction_TransactionStatus]
+	@TransactionNumber	nvarchar(50),
+	@PaymentReferenceNumber	nvarchar(50) = null,
+	@Bank	nvarchar(500) = null,
+	@TransactionStatusId	int,
+	@ResponsePayload	text,
+	@AuthorizationCode	nvarchar(50) = null,
+	@AuthorizationNumber	nvarchar(50) = null,
+	@CardMethod	nvarchar(50) = null,
+	@CardType	nvarchar(50) = null,
+	@CardNumber	nvarchar(500) = null,
+	@ExpiryMonth	nvarchar(10) = null,
+	@ExpiryYear	nvarchar(10) = null,
+	@AppId	nvarchar(50) = null,
+	@ResponseCode	nvarchar(max) = null,
+	@ErrorMessage	nvarchar(max) = null,
+	@NewTransactionId nvarchar(10) = null,
+	@Channel nvarchar(100) = null
+AS
+Begin
+			update PaymentTransaction set 
+			[TransactionStatusId]=@TransactionStatusId,
+			[PaymentReferenceNumber]=@PaymentReferenceNumber,
+			[Bank]=@Bank,
+			[LastModifiedOn]=GETDATE(),
+			[ResponsePayload]=@ResponsePayload,
+			[AuthorizationCode]=@AuthorizationCode,
+			[AuthorizationNumber]=@AuthorizationNumber,
+			[CardMethod]=@CardMethod,
+			[CardType]=@CardType,
+			[CardNumber]=@CardNumber,
+			[ExpiryMonth]=@ExpiryMonth,
+			[ExpiryYear]=@ExpiryYear,
+			[AppId]=@AppId,
+			[ResponseCode]=@ResponseCode,
+			[ErrorMessage]=@ErrorMessage,
+			[NewTransactionId]=@NewTransactionId,
+			[Channel]=@Channel
+			where TransactionNumber = @TransactionNumber
+			End
+
+
+GO
+IF OBJECT_ID('dbo.spUpdate_PaymentTransaction_TransactionStatus') IS NOT NULL
+    PRINT '<< CREATED Store Procedure dbo.spUpdate_PaymentTransaction_TransactionStatus >>'
+ELSE
+    PRINT '<< FAILED CREATE Store Procedure dbo.spUpdate_PaymentTransaction_TransactionStatus >>'
+GO
+
+IF OBJECT_ID('dbo.spUpdate_Status') IS NOT NULL
+BEGIN
+    DROP PROCEDURE dbo.spUpdate_Status
+    IF OBJECT_ID('dbo.spUpdate_Status') IS NOT NULL
+        PRINT '<< FAILED DROP PROCEDURE dbo.spUpdate_Status >>'
+    ELSE
+        PRINT '<< SUCCESS DROP PROCEDURE dbo.spUpdate_Status >>'
+END
+GO
+Create   PROCEDURE [dbo].[spUpdate_Status]
+	@OrderId nvarchar(50) = null,
+	@responseCode nvarchar(100) = null,
+	@errorMessage nvarchar(2000) = null,
+	@statCode nvarchar(100) = null,
+	@Status int = null,
+	@channel nvarchar(100) = null,
+	@transID nvarchar(100) = null
+AS
+Begin
+			update PaymentTransaction set 
+			TransactionStatusId = @Status,
+			ResponseCode = @responseCode,
+			ErrorMessage = @errorMessage,
+			AuthorizationCode = @statCode,
+			Channel = @channel,
+			PaymentReferenceNumber = @transID
+			where OrderNumber = @OrderId
+			End
+
+
+GO
+IF OBJECT_ID('dbo.spUpdate_Status') IS NOT NULL
+    PRINT '<< CREATED Store Procedure dbo.spUpdate_Status >>'
+ELSE
+    PRINT '<< FAILED CREATE Store Procedure dbo.spUpdate_Status >>'
+
+
+GO
+
+IF NOT EXISTS (SELECT 1 FROM sys.objects 
+WHERE object_id = OBJECT_ID(N'[dbo].[LARazerPayEWallet]') AND type in (N'U'))
+begin
+CREATE TABLE [dbo].[LARazerPayEWallet](
+	[Id] [int] IDENTITY(1,1) PRIMARY KEY NOT NULL,
+	[EWalletId] [nvarchar](15) NULL,
+	[LAEWalletKey] [nvarchar](15) NULL,
+	[EWalletName] [nvarchar](250) NULL,
+	[IsActive] [bit] NULL
+)
+
+PRINT '<< Successful Add table [LARazerPayEWallet] >>';
+END
+ELSE
+PRINT '<< Table [LARazerPayEWallet] already exist >>';
+GO
+
+
+IF NOT EXISTS (SELECT 1 FROM LARazerPayEWallet 
+WHERE EWalletId = 'MB2U_QRPay-Push')
+begin
+
+INSERT INTO LARazerPayEWallet VALUES ('MB2U_QRPay-Push', 'MAYBANKQR', 'Maybank QR Pay', 1)
+INSERT INTO LARazerPayEWallet VALUES ('TNG-EWALLET', 'TNG', 'Touch & Go', 1)
+INSERT INTO LARazerPayEWallet VALUES ('GRABPAY', 'GRABPAY', 'GrabPay', 1)
+INSERT INTO LARazerPayEWallet VALUES ('BOOST', 'BOOST', 'Boost', 1)
+
+PRINT '<< Successful Add data [LARazerPayEWallet] >>';
+END
+ELSE
+PRINT '<< Add [LARazerPayEWallet] already exist >>';
+GO
+
+IF OBJECT_ID('dbo.spGet_LARazerPayEWallet_By_Id') IS NOT NULL
+BEGIN
+    DROP PROCEDURE dbo.spGet_LARazerPayEWallet_By_Id
+    IF OBJECT_ID('dbo.spGet_LARazerPayEWallet_By_Id') IS NOT NULL
+        PRINT '<< FAILED DROP PROCEDURE dbo.spGet_LARazerPayEWallet_By_Id >>'
+    ELSE
+        PRINT '<< SUCCESS DROP PROCEDURE dbo.spGet_LARazerPayEWallet_By_Id >>'
+END
+GO
+
+CREATE PROCEDURE [dbo].[spGet_LARazerPayEWallet_By_Id]
+	@Code nvarchar(50)
+AS
+	begin
+		select * from [LARazerPayEWallet]
+		where EWalletId=@Code;
+	end
+
+GO
+IF OBJECT_ID('dbo.spGet_LARazerPayEWallet_By_Id') IS NOT NULL
+    PRINT '<< CREATED Store Procedure dbo.spGet_LARazerPayEWallet_By_Id >>'
+ELSE
+    PRINT '<< FAILED CREATE Store Procedure dbo.spGet_LARazerPayEWallet_By_Id >>'
+
+	GO
+IF OBJECT_ID('dbo.spGet_PendingPaymentTransactionList_By_OrderNumber') IS NOT NULL
+BEGIN
+    DROP PROCEDURE dbo.spGet_PendingPaymentTransactionList_By_OrderNumber
+    IF OBJECT_ID('dbo.spGet_PendingPaymentTransactionList_By_OrderNumber') IS NOT NULL
+        PRINT '<< FAILED DROP PROCEDURE dbo.spGet_PendingPaymentTransactionList_By_OrderNumber >>'
+    ELSE
+        PRINT '<< SUCCESS DROP PROCEDURE dbo.spGet_PendingPaymentTransactionList_By_OrderNumber >>'
+END
+GO
+
+Create PROCEDURE [dbo].[spGet_PendingPaymentTransactionList_By_OrderNumber]
+	@OrderNumber nvarchar(50),
+	@PaymentProviderCode nvarchar(10)
+AS
+Begin
+	select * from [PaymentTransaction]
+	where OrderNumber=@OrderNumber and PaymentProviderCode = @PaymentProviderCode
+END
+
+
+GO
+IF OBJECT_ID('dbo.spGet_PendingPaymentTransactionList_By_OrderNumber') IS NOT NULL
+    PRINT '<< CREATED Store Procedure dbo.spGet_PendingPaymentTransactionList_By_OrderNumber >>'
+ELSE
+    PRINT '<< FAILED CREATE Store Procedure dbo.spGet_PendingPaymentTransactionList_By_OrderNumber >>'
+
+
+11-10-2021 - update mpgs to version 61
+=============================================================================================================
+IF NOT EXISTS(SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS
+				WHERE TABLE_NAME = 'MPGSBatchProcessResult'
+				AND COLUMN_NAME = 'CardType')
+		BEGIN
+			ALTER TABLE dbo.MPGSBatchProcessResult ADD CardType nvarchar(30)
+			PRINT '<< MPGSBatchProcessResult.CardType Added >>'
+		END
+ELSE
+		PRINT '<< MPGSBatchProcessResult.CardType already exists >>'
+GO
+
+IF NOT EXISTS(SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS
+				WHERE TABLE_NAME = 'MPGSBatchProcessResult'
+				AND COLUMN_NAME = 'CardMethod')
+		BEGIN
+			ALTER TABLE dbo.MPGSBatchProcessResult ADD CardMethod nvarchar(30)
+			PRINT '<< MPGSBatchProcessResult.CardMethod Added >>'
+		END
+ELSE
+		PRINT '<< MPGSBatchProcessResult.CardMethod already exists >>'
+GO
+
+9-9-2021 - update mpgs to version 61
+==============================================================================================================
+IF NOT EXISTS (SELECT 1 FROM sys.objects 
+WHERE object_id = OBJECT_ID(N'[dbo].[EnrollmentStatus]') AND type in (N'U'))
+begin
+CREATE TABLE [dbo].[EnrollmentStatus](
+	[Id] [int] IDENTITY(1,1) NOT NULL,
+	[PaymentTransactionId] [int] NOT NULL,
+	[OrderNumber] [Nvarchar](50),
+	[ReceiveTransactionID] [nvarchar](50),
+	[Veres] [varchar](10) NULL,
+	[Pares] [varchar](10) NULL,
+	[AcsEci] [nchar](2) NULL,
+	[AuthenticationToken] [nchar](32) NULL,
+	[TransactionId] [nchar](50) NULL,
+	[dsVersion] [nchar](10) NULL,
+	[TransactionStatus] [nchar](5) NULL ,
+	[StatusReasonCode] [nchar](5) NULL ,
+	[CreditCardNumber] [nchar](25) NULL ,
+	[PolicyNo] [nchar](20) NULL ,
+	[CreatedOn] [datetime] NOT NULL,
+	[LastModifiedOn] [datetime] NULL,
+	);
+PRINT '<< Successful Add table [EnrollmentStatus] >>';
+END
+ELSE
+PRINT '<< Table [EnrollmentStatus] already exist >>';
+GO
+
+
+	IF OBJECT_ID('dbo.spGet_Enrollment_Status') IS NOT NULL
+BEGIN
+    DROP PROCEDURE dbo.spGet_Enrollment_Status
+    IF OBJECT_ID('dbo.spGet_Enrollment_Status') IS NOT NULL
+        PRINT '<< FAILED DROP PROCEDURE dbo.spGet_Enrollment_Status >>'
+    ELSE
+        PRINT '<< SUCCESS DROP PROCEDURE dbo.spGet_Enrollment_Status >>'
+END
+GO
+
+CREATE PROCEDURE [dbo].[spGet_Enrollment_Status]
+	@PaymentTransactionId nvarchar(50)
+AS
+	begin
+		select * from [EnrollmentStatus]
+		where PaymentTransactionId=@PaymentTransactionId;
+	end
+
+GO
+IF OBJECT_ID('dbo.spGet_Enrollment_Status') IS NOT NULL
+    PRINT '<< CREATED Store Procedure dbo.spGet_Enrollment_Status >>'
+ELSE
+    PRINT '<< FAILED CREATE Store Procedure dbo.spGet_Enrollment_Status >>'
+
+
+GO
+
+	IF OBJECT_ID('dbo.spInsert_Enrollment_Status') IS NOT NULL
+BEGIN
+    DROP PROCEDURE dbo.spInsert_Enrollment_Status
+    IF OBJECT_ID('dbo.spInsert_Enrollment_Status') IS NOT NULL
+        PRINT '<< FAILED DROP PROCEDURE dbo.spInsert_Enrollment_Status >>'
+    ELSE
+        PRINT '<< SUCCESS DROP PROCEDURE dbo.spInsert_Enrollment_Status >>'
+END
+GO
+
+CREATE PROCEDURE [dbo].[spInsert_Enrollment_Status] 
+	@PaymentTransactionId int,
+	@Veres varchar(10) = null,
+	@Pares varchar(10) = null,
+	@AcsEci varchar(2) = null,
+	@AuthenticationToken varchar(32) = null,
+	@TransactionId varchar(50) = null,
+	@dsVersion varchar(10) = null,
+	@OrderNumber varchar (50) = NULL,
+    @TransactionStatus varchar(5) = NULL,
+    @StatusReasonCode varchar(5) = NULL ,
+    @CreditCardNumber varchar (25) = NULL,
+	@ReceiveTransactionID varchar(50) = NULL
+
+AS
+Begin
+			Insert into [EnrollmentStatus] 
+			(
+			[PaymentTransactionId],
+		    [Veres],
+            [Pares],
+            [CreatedOn],
+			[LastModifiedOn],
+			[AcsEci],
+			[AuthenticationToken],
+			[TransactionId],
+			[dsVersion],
+			[OrderNumber],
+			[TransactionStatus],
+			[StatusReasonCode] ,
+			[CreditCardNumber],
+			[ReceiveTransactionID]
+			)
+		   
+		   values
+			( 
+			@PaymentTransactionId,
+			@Veres,
+			@Pares,
+			getdate(),
+			getdate(),
+			@AcsEci,
+			@AuthenticationToken,
+			@TransactionId,
+			@dsVersion,
+			@OrderNumber ,
+			@TransactionStatus,
+			@StatusReasonCode ,
+			@CreditCardNumber,
+			@ReceiveTransactionID
+			)
+End
+
+GO
+IF OBJECT_ID('dbo.spInsert_Enrollment_Status') IS NOT NULL
+    PRINT '<< CREATED Store Procedure dbo.spInsert_Enrollment_Status >>'
+ELSE
+    PRINT '<< FAILED CREATE Store Procedure dbo.spInsert_Enrollment_Status >>'
+
+GO
+
+GO
+
+	IF OBJECT_ID('dbo.spUpdate_Enrollment_Status') IS NOT NULL
+BEGIN
+    DROP PROCEDURE dbo.spUpdate_Enrollment_Status
+    IF OBJECT_ID('dbo.spUpdate_Enrollment_Status') IS NOT NULL
+        PRINT '<< FAILED DROP PROCEDURE dbo.spUpdate_Enrollment_Status >>'
+    ELSE
+        PRINT '<< SUCCESS DROP PROCEDURE dbo.spUpdate_Enrollment_Status >>'
+END
+GO
+
+create PROCEDURE [dbo].[spUpdate_Enrollment_Status] 
+    @PaymentTransactionId int,
+	@Veres varchar(10) = null,
+	@Pares varchar(10) = null,
+	@AcsEci varchar(2) = null,
+	@AuthenticationToken varchar(32) = null,
+	@TransactionId varchar(50) = null,
+	@dsVersion varchar(10) = null,
+	@OrderNumber varchar (50) = NULL,
+    @TransactionStatus varchar(5) = NULL,
+    @StatusReasonCode varchar(5) = NULL ,
+    @CreditCardNumber varchar (25) = NULL,
+	@ReceiveTransactionID varchar(50) = NULL
+
+AS
+Begin
+			update [EnrollmentStatus] 		   
+		   set
+			Veres = @Veres,
+			Pares = @Pares,
+			AcsEci = @AcsEci,
+			AuthenticationToken = @AuthenticationToken,
+			TransactionId = @TransactionId,
+			dsVersion = @dsVersion,
+			OrderNumber = @OrderNumber,
+			TransactionStatus = @TransactionStatus,
+			StatusReasonCode = @StatusReasonCode,
+			CreditCardNumber = @CreditCardNumber,
+			ReceiveTransactionID = @ReceiveTransactionID,
+			LastModifiedOn = getdate()
+			where [PaymentTransactionId] = @PaymentTransactionId
+End
+
+GO
+IF OBJECT_ID('dbo.spUpdate_Enrollment_Status') IS NOT NULL
+    PRINT '<< CREATED Store Procedure dbo.spUpdate_Enrollment_Status >>'
+ELSE
+    PRINT '<< FAILED CREATE Store Procedure dbo.spUpdate_Enrollment_Status >>'
+
+GO
+
+IF NOT EXISTS(SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS
+				WHERE TABLE_NAME = 'PaymentTransaction'
+				AND COLUMN_NAME = 'NewTransactionId')
+		BEGIN
+			ALTER TABLE dbo.PaymentTransaction ADD NewTransactionId nvarchar(50)
+			PRINT '<< NewTransactionId already add >>'
+		END
+ELSE
+		PRINT '<< Column already exist >>'
+GO
+
+
+	IF OBJECT_ID('dbo.spUpdate_PaymentTransaction_TransactionStatus') IS NOT NULL
+BEGIN
+    DROP PROCEDURE dbo.spUpdate_PaymentTransaction_TransactionStatus
+    IF OBJECT_ID('dbo.spUpdate_PaymentTransaction_TransactionStatus') IS NOT NULL
+        PRINT '<< FAILED DROP PROCEDURE dbo.spUpdate_PaymentTransaction_TransactionStatus >>'
+    ELSE
+        PRINT '<< SUCCESS DROP PROCEDURE dbo.spUpdate_PaymentTransaction_TransactionStatus >>'
+END
+GO
+
+Create PROCEDURE [dbo].[spUpdate_PaymentTransaction_TransactionStatus]
+	@TransactionNumber	nvarchar(50),
+	@PaymentReferenceNumber	nvarchar(50) = null,
+	@Bank	nvarchar(500) = null,
+	@TransactionStatusId	int,
+	@ResponsePayload	text,
+	@AuthorizationCode	nvarchar(50) = null,
+	@AuthorizationNumber	nvarchar(50) = null,
+	@CardMethod	nvarchar(50) = null,
+	@CardType	nvarchar(50) = null,
+	@CardNumber	nvarchar(500) = null,
+	@ExpiryMonth	nvarchar(10) = null,
+	@ExpiryYear	nvarchar(10) = null,
+	@AppId	nvarchar(50) = null,
+	@ResponseCode	nvarchar(max) = null,
+	@ErrorMessage	nvarchar(max) = null,
+	@NewTransactionId nvarchar(10) = null
+AS
+Begin
+			update PaymentTransaction set 
+			[TransactionStatusId]=@TransactionStatusId,
+			[PaymentReferenceNumber]=@PaymentReferenceNumber,
+			[Bank]=@Bank,
+			[LastModifiedOn]=GETDATE(),
+			[ResponsePayload]=@ResponsePayload,
+			[AuthorizationCode]=@AuthorizationCode,
+			[AuthorizationNumber]=@AuthorizationNumber,
+			[CardMethod]=@CardMethod,
+			[CardType]=@CardType,
+			[CardNumber]=@CardNumber,
+			[ExpiryMonth]=@ExpiryMonth,
+			[ExpiryYear]=@ExpiryYear,
+			[AppId]=@AppId,
+			[ResponseCode]=@ResponseCode,
+			[ErrorMessage]=@ErrorMessage,
+			[NewTransactionId]=@NewTransactionId
+			where TransactionNumber = @TransactionNumber
+			End
+
+
+
+GO
+IF OBJECT_ID('dbo.spUpdate_PaymentTransaction_TransactionStatus') IS NOT NULL
+    PRINT '<< CREATED Store Procedure dbo.spUpdate_PaymentTransaction_TransactionStatus >>'
+ELSE
+    PRINT '<< FAILED CREATE Store Procedure dbo.spUpdate_PaymentTransaction_TransactionStatus >>'
+
+GO
+
+
+IF NOT EXISTS(SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS
+				WHERE TABLE_NAME = 'ApplicationAccount'
+				AND COLUMN_NAME = 'Merchant')
+		BEGIN
+			ALTER TABLE dbo.ApplicationAccount ADD Merchant nvarchar(500)
+			PRINT '<< ApplicationAccount.Merchant Added >>'
+		END
+ELSE
+		PRINT '<< ApplicationAccount.Merchant already exists >>'
+GO
+
+IF NOT EXISTS(SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS
+				WHERE TABLE_NAME = 'ApplicationAccount'
+				AND COLUMN_NAME = 'MerchantUsername')
+		BEGIN
+			ALTER TABLE dbo.ApplicationAccount ADD MerchantUsername nvarchar(500)
+			PRINT '<< ApplicationAccount.MerchantUsername Added >>'
+		END
+ELSE
+		PRINT '<< ApplicationAccount.MerchantUsername already exists >>'
+GO
+
+IF NOT EXISTS(SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS
+				WHERE TABLE_NAME = 'ApplicationAccount'
+				AND COLUMN_NAME = 'MerchantPassword')
+		BEGIN
+			ALTER TABLE dbo.ApplicationAccount ADD MerchantPassword nvarchar(500)
+			PRINT '<< ApplicationAccount.MerchantPassword Added >>'
+		END
+ELSE
+		PRINT '<< ApplicationAccount.MerchantPassword already exists >>'
+
+GO
+
+	IF OBJECT_ID('dbo.spGet_PaymentTransaction_pendingEnrolmentStatus') IS NOT NULL
+BEGIN
+    DROP PROCEDURE dbo.spGet_PaymentTransaction_pendingEnrolmentStatus
+    IF OBJECT_ID('dbo.spGet_PaymentTransaction_pendingEnrolmentStatus') IS NOT NULL
+        PRINT '<< FAILED DROP PROCEDURE dbo.spGet_PaymentTransaction_pendingEnrolmentStatus >>'
+    ELSE
+        PRINT '<< SUCCESS DROP PROCEDURE dbo.spGet_PaymentTransaction_pendingEnrolmentStatus >>'
+END
+GO
+
+Create PROCEDURE [dbo].[spGet_PaymentTransaction_pendingEnrolmentStatus]
+
+AS
+Begin
+			select PaymentTransaction.id,  PaymentTransaction.ordernumber from PaymentTransaction 
+	left join EnrollmentStatus on EnrollmentStatus.PaymentTransactionId = PaymentTransaction.Id
+        where ResponseCode in ('00','85') and PaymentProviderCode = 'MPGS' 
+		and EnrollmentStatus.PaymentTransactionId is null	
+			End
+
+
+
+GO
+IF OBJECT_ID('dbo.spGet_PaymentTransaction_pendingEnrolmentStatus') IS NOT NULL
+    PRINT '<< CREATED Store Procedure dbo.spUpdate_PaymentTransaction_TransactionStatus >>'
+ELSE
+    PRINT '<< FAILED CREATE Store Procedure dbo.spGet_PaymentTransaction_pendingEnrolmentStatus >>'
+
+GO
+
+
+GO
+
+IF NOT EXISTS(SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS
+				WHERE TABLE_NAME = 'ApplicationAccount'
+				AND COLUMN_NAME = 'FPXSellerExchangeId')
+		BEGIN
+			ALTER TABLE [ApplicationAccount] ADD [FPXSellerExchangeId] nvarchar(500)
+			PRINT '<< ApplicationAccount.FPXSellerExchangeId Added >>'
+		END
+ELSE
+		PRINT '<< ApplicationAccount.FPXSellerExchangeId already exists >>'
+
+		GO
+
+		IF NOT EXISTS(SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS
+				WHERE TABLE_NAME = 'ApplicationAccount'
+				AND COLUMN_NAME = 'FPXSellerId')
+		BEGIN
+			ALTER TABLE [ApplicationAccount] ADD [FPXSellerId] nvarchar(500)
+			PRINT '<< ApplicationAccount.FPXSellerId Added >>'
+		END
+ELSE
+		PRINT '<< ApplicationAccount.FPXSellerId already exists >>'
+
+		GO
+
+IF NOT EXISTS(SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS
+				WHERE TABLE_NAME = 'ApplicationAccount'
+				AND COLUMN_NAME = 'FPXSellerBankCode')
+		BEGIN
+			ALTER TABLE [ApplicationAccount] ADD [FPXSellerBankCode] nvarchar(500)
+			PRINT '<< ApplicationAccount.FPXSellerBankCode Added >>'
+		END
+ELSE
+		PRINT '<< ApplicationAccount.FPXSellerBankCode already exists >>'
+
+
+		GO
+
+IF NOT EXISTS(SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS
+				WHERE TABLE_NAME = 'ApplicationAccount'
+				AND COLUMN_NAME = 'FPXPrivateKeyPath')
+		BEGIN
+			ALTER TABLE [ApplicationAccount] ADD [FPXPrivateKeyPath] nvarchar(500)
+			PRINT '<< ApplicationAccount.FPXPrivateKeyPath Added >>'
+		END
+ELSE
+		PRINT '<< ApplicationAccount.FPXPrivateKeyPath already exists >>'
+
+		GO
+
+IF NOT EXISTS(SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS
+				WHERE TABLE_NAME = 'ApplicationAccount'
+				AND COLUMN_NAME = 'FPXPublicCertPath')
+		BEGIN
+			ALTER TABLE [ApplicationAccount] ADD [FPXPublicCertPath] nvarchar(500)
+			PRINT '<< ApplicationAccount.FPXPublicCertPath Added >>'
+		END
+ELSE
+		PRINT '<< ApplicationAccount.FPXPublicCertPath already exists >>'
+
+		GO
+
+IF NOT EXISTS(SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS
+				WHERE TABLE_NAME = 'ApplicationAccount'
+				AND COLUMN_NAME = 'FPXVersion')
+		BEGIN
+			ALTER TABLE [ApplicationAccount] ADD [FPXVersion] nvarchar(500)
+			PRINT '<< ApplicationAccount.FPXVersion Added >>'
+		END
+ELSE
+		PRINT '<< ApplicationAccount.FPXVersion already exists >>'
+
+		GO
+
+IF NOT EXISTS(SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS
+				WHERE TABLE_NAME = 'ApplicationAccount'
+				AND COLUMN_NAME = 'EMandateSellerExchangeId')
+		BEGIN
+			ALTER TABLE [ApplicationAccount] ADD [EMandateSellerExchangeId] nvarchar(500)
+			PRINT '<< ApplicationAccount.EMandateSellerExchangeId Added >>'
+		END
+ELSE
+		PRINT '<< ApplicationAccount.EMandateSellerExchangeId already exists >>'
+
+		GO
+
+IF NOT EXISTS(SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS
+				WHERE TABLE_NAME = 'ApplicationAccount'
+				AND COLUMN_NAME = 'EMandateSellerId')
+		BEGIN
+			ALTER TABLE [ApplicationAccount] ADD [EMandateSellerId] nvarchar(500)
+			PRINT '<< ApplicationAccount.EMandateSellerId Added >>'
+		END
+ELSE
+		PRINT '<< ApplicationAccount.EMandateSellerId already exists >>'
+
+		GO
+
+IF NOT EXISTS(SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS
+				WHERE TABLE_NAME = 'ApplicationAccount'
+				AND COLUMN_NAME = 'EMandateSellerBankCode')
+		BEGIN
+			ALTER TABLE [ApplicationAccount] ADD [EMandateSellerBankCode] nvarchar(500)
+			PRINT '<< ApplicationAccount.EMandateSellerBankCode Added >>'
+		END
+ELSE
+		PRINT '<< ApplicationAccount.EMandateSellerBankCode already exists >>'
+
+		GO
+
+IF NOT EXISTS(SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS
+				WHERE TABLE_NAME = 'ApplicationAccount'
+				AND COLUMN_NAME = 'EMandatePrivateKeyPath')
+		BEGIN
+			ALTER TABLE [ApplicationAccount] ADD [EMandatePrivateKeyPath] nvarchar(500)
+			PRINT '<< ApplicationAccount.EMandatePrivateKeyPath Added >>'
+		END
+ELSE
+		PRINT '<< ApplicationAccount.EMandatePrivateKeyPath already exists >>'
+
+		GO
+
+IF NOT EXISTS(SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS
+				WHERE TABLE_NAME = 'ApplicationAccount'
+				AND COLUMN_NAME = 'EMandatePublicCertPath')
+		BEGIN
+			ALTER TABLE [ApplicationAccount] ADD [EMandatePublicCertPath] nvarchar(500)
+			PRINT '<< ApplicationAccount.EMandatePublicCertPath Added >>'
+		END
+ELSE
+		PRINT '<< ApplicationAccount.EMandatePublicCertPath already exists >>'
+
+		GO
+
+IF NOT EXISTS(SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS
+				WHERE TABLE_NAME = 'ApplicationAccount'
+				AND COLUMN_NAME = 'EMandateFPX_Version')
+		BEGIN
+			ALTER TABLE [ApplicationAccount] ADD [EMandateFPX_Version] nvarchar(500)
+			PRINT '<< ApplicationAccount.EMandateFPX_Version Added >>'
+		END
+ELSE
+		PRINT '<< ApplicationAccount.EMandateFPX_Version already exists >>'
+
+		GO
+			IF OBJECT_ID('dbo.spGet_PaymentTransaction_By_OrderNumber_MPGS_Success') IS NOT NULL
+BEGIN
+    DROP PROCEDURE dbo.spGet_PaymentTransaction_By_OrderNumber_MPGS_Success
+    IF OBJECT_ID('dbo.spGet_PaymentTransaction_By_OrderNumber_MPGS_Success') IS NOT NULL
+        PRINT '<< FAILED DROP PROCEDURE dbo.spGet_PaymentTransaction_By_OrderNumber_MPGS_Success >>'
+    ELSE
+        PRINT '<< SUCCESS DROP PROCEDURE dbo.spGet_PaymentTransaction_By_OrderNumber_MPGS_Success >>'
+END
+GO
+
+Create PROCEDURE [dbo].[spGet_PaymentTransaction_By_OrderNumber_MPGS_Success]
+	@OrderNumber nvarchar(50)
+AS
+	begin
+	    select top 1 PaymentTransaction.*,ApplicationAccount.Code as ApplicationAccountCode
+		from [PaymentTransaction] 
+		left join ApplicationAccount on PaymentTransaction.ApplicationAccountId = ApplicationAccount.Id
+		where OrderNumber=@OrderNumber and ErrorMessage in ('APPROVED','APPROVED_AUTO')
+		order by CreatedOn desc;
+	end
+
+GO
+IF OBJECT_ID('dbo.spGet_PaymentTransaction_By_OrderNumber_MPGS_Success') IS NOT NULL
+    PRINT '<< CREATED Store Procedure dbo.spGet_PaymentTransaction_By_OrderNumber_MPGS_Success >>'
+ELSE
+    PRINT '<< FAILED CREATE Store Procedure dbo.spGet_PaymentTransaction_By_OrderNumber_MPGS_Success >>'
+
+
+add web config
+ <add key="MPGS.Enable3DS2" value="True"/>
+
+
+4 -6 - 2021 - 1.2_CP_change - Foo
+==============================================================================================================
+IF NOT EXISTS (SELECT 1 FROM sys.objects 
+WHERE object_id = OBJECT_ID(N'[dbo].[MPGSBinList]') AND type in (N'U'))
+begin
+CREATE TABLE [dbo].[MPGSBinList](
+	[Id] [int] IDENTITY(1,1) NOT NULL PRIMARY KEY,
+	[Bin] [nvarchar](10) NULL,
+	[BankBinListId] [int] NULL,
+	[IsActive] [bit] NOT NULL,
+	[CreatedDate] [DateTime] NOT NULL,
+);
+PRINT '<< Successful Add table [MPGSBinList] >>';
+end
+ELSE
+PRINT '<< Table [MPGSBinList] already exist >>';
+GO
+
+IF NOT EXISTS (SELECT 1 FROM sys.objects 
+WHERE object_id = OBJECT_ID(N'[dbo].[MPGSBankList]') AND type in (N'U'))
+begin
+CREATE TABLE [dbo].[MPGSBankList](
+	[Id] [int] IDENTITY(1,1) NOT NULL PRIMARY KEY,
+	[bankcode] [nvarchar](10) NULL,
+	[BankName] [nvarchar](100) NULL,
+	[IsActive] [bit] NOT NULL,
+	[CreatedDate] [DateTime] NOT NULL,
+);
+PRINT '<< Successful Add table [MPGSBankList] >>';
+end
+ELSE
+PRINT '<< Table [MPGSBankList] already exist >>';
+GO
+
+
+Truncate TABLE MPGSBinList;
+GO
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('512089',1,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('512867',1,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('512874',1,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('515532',1,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('518332',1,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('522408',1,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('523818',1,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('527551',1,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('540041',1,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('541288',1,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('541901',1,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('544623',1,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('544635',1,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('549854',1,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('553021',1,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('555631',1,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('555769',1,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('559927',1,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('515493',2,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('515512',2,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('515545',2,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('517801',2,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('517811',2,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('520018',2,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('520904',2,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('537685',2,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('544398',2,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('544568',2,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('544756',2,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('544778',2,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('544972',2,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('545560',2,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('545668',2,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('545843',2,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('545844',2,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('545931',2,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('545960',2,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('545976',2,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('547037',2,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('547188',2,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('549211',2,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('549440',2,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('554529',2,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('559529',2,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('559533',2,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('559876',2,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('515504',3,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('515697',3,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('518921',3,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('520622',3,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('520635',3,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('526120',3,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('539025',3,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('540007',3,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('541726',3,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('541971',3,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('544624',3,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('545595',3,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('545836',3,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('547036',3,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('547107',3,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('552013',3,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('552115',3,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('552333',3,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('552334',3,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('554539',3,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('557756',3,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('559045',3,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('515491',4,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('515522',4,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('515527',4,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('518053',4,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('518483',4,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('523945',4,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('524312',4,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('526478',4,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('531155',4,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('532535',4,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('540067',4,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('540068',4,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('540558',4,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('542124',4,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('544933',4,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('546015',4,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('549186',4,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('549543',4,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('552357',4,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('555416',4,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('555750',4,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('520941',5,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('521400',5,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('521441',5,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('539981',5,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('540478',5,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('541229',5,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('542444',5,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('544919',5,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('545671',5,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('552040',5,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('552302',5,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('552793',5,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('553003',5,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('553154',5,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('555627',5,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('558965',5,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('512001',6,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('518134',6,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('515481',7,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('515497',7,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('515498',7,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('516056',7,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('518098',7,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('518772',7,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('518990',7,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('520954',7,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('521306',7,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('523935',7,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('525651',7,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('526851',7,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('526852',7,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('526854',7,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('526899',7,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('535859',7,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('540256',7,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('543142',7,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('543245',7,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('543311',7,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('544939',7,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('545601',7,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('546014',7,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('549076',7,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('549415',7,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('552228',7,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('553028',7,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('554475',7,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('555587',7,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('559540',7,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('515464',8,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('515487',8,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('517527',8,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('519469',8,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('521190',8,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('521401',8,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('521436',8,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('522222',8,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('522385',8,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('522457',8,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('535407',8,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('540796',8,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('541770',8,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('543623',8,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('544363',8,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('546070',8,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('546074',8,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('548637',8,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('550272',8,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('552086',8,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('552409',8,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('552917',8,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('553014',8,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('555367',8,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('558774',8,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('558829',8,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('515529',9,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('520020',9,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('523938',9,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('533273',9,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('535411',9,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('536280',9,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('537085',9,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('537992',9,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('541656',9,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('542634',9,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('544698',9,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('547231',9,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('549797',9,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('549798',9,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('550989',9,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('559524',9,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('559526',9,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('559589',9,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('544916',7,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('552925',7,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('553382',7,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('553517',7,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('555145',7,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('555368',7,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('545006',10,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('515484',11,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('515707',11,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('518512',11,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('519440',11,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('519901',11,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('520335',11,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('524830',11,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('526748',11,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('528925',11,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('528943',11,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('532014',11,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('541228',11,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('541725',11,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('541912',11,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('542836',11,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('544064',11,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('544938',11,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('545233',11,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('545519',11,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('546084',11,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('549841',11,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('549844',11,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('557828',11,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('559409',11,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('514896',12,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('515494',12,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('515537',12,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('515704',12,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('515734',12,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('516362',12,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('518085',12,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('521308',12,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('521437',12,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('522351',12,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('526259',12,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('527290',12,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('527476',12,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('528932',12,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('534970',12,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('537045',12,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('539696',12,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('539974',12,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('543047',12,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('543063',12,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('543105',12,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('543894',12,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('543931',12,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('544853',12,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('545329',12,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('545434',12,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('545975',12,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('546362',12,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('547560',12,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('547726',12,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('548705',12,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('548787',12,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('549203',12,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('559521',12,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('515471',13,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('515546',13,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('515584',13,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('515703',13,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('519468',13,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('519471',13,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('520095',13,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('527423',13,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('528958',13,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('530353',13,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('530356',13,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('531335',13,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('531596',13,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('532678',13,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('532706',13,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('534784',13,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('535391',13,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('538846',13,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('546594',13,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('546595',13,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('546973',13,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('553025',13,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('514882',14,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('515714',14,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('517116',14,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('521422',14,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('527202',14,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('531142',14,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('532989',14,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('535418',14,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('539163',14,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('540069',14,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('540119',14,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('543228',14,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('544388',14,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('544535',14,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('544655',14,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('544920',14,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('545442',14,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('546609',14,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('547043',14,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('547186',14,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('548114',14,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('548898',14,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('549782',14,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('559531',14,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('510195',15,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('514024',15,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('518123',15,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('539806',15,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('544690',15,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('545630',15,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('545785',15,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('545786',15,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('546321',15,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('548023',15,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('549698',15,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('559106',15,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('512091',16,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('515465',16,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('521887',16,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('524147',16,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('528452',16,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('532669',16,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('537812',16,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('540162',16,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('540916',16,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('541060',16,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('541091',16,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('550004',16,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('557899',16,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('559543',16,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('559548',16,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('512432',17,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('512481',17,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('520170',17,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('520396',17,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('522102',17,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('522856',17,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('523939',17,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('529980',17,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('541415',17,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('542261',17,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('545415',17,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('559542',17,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('512368',18,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('525629',18,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('528199',18,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('544559',18,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('544918',18,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('547071',18,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('549960',18,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('557824',18,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('512820',3,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('518303',3,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('521395',3,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('543104',3,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('544591',3,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('511347',19,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('515492',19,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('515530',19,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('515983',19,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('522242',19,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('525785',19,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('526558',19,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('527486',19,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('528406',19,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('530355',19,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('534139',19,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('535380',19,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('543679',19,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('549288',19,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('549796',19,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('531927',1,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('543293',1,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('550275',1,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('519603',3,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('533268',3,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('514936',20,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('519598',20,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('520996',20,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('527144',20,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('535371',20,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('535374',20,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('535412',20,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('539195',20,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('521059',3,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('535385',3,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('542868',21,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('519528',22,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('532142',22,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('535382',22,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('541531',22,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('535840',9,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('539172',9,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('546069',9,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('547187',9,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('559763',23,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('534451',3,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('534465',3,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('535007',3,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('546358',3,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('549069',3,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('531090',12,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('531591',12,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('538746',21,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('543777',21,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('545051',21,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('545371',21,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('557800',21,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('559998',21,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('529762',7,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('533261',7,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('535381',7,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('541777',7,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('559743',7,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('559914',7,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('525318',24,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('554273',24,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('515459',2,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('522698',2,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('528541',2,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('545470',2,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('546039',2,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('550024',2,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('554261',2,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('557943',2,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('527200',25,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('510601',3,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('524143',26,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('526798',26,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('544431',26,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('527504',27,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('546971',27,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('222906',17,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('516987',28,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('555686',29,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('222901',30,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('553706',31,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('542780',32,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('402845',15,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('405998',15,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('420709',15,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('436508',15,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('436509',15,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('453229',15,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('455731',15,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('462489',15,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('463924',15,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('477395',15,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('479246',15,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('479247',15,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('400121',4,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('401636',4,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('407410',4,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('407601',4,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('415939',4,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('428332',4,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('429316',4,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('436500',4,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('446031',4,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('446032',4,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('450618',4,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('450667',4,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('453254',4,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('453255',4,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('461664',4,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('463225',4,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('466540',4,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('468985',4,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('469619',4,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('483514',4,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('484281',4,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('489029',4,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('489086',4,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('496623',4,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('496643',4,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('498793',4,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('429100',9,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('430118',9,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('436688',9,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('438668',9,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('438899',9,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('447764',9,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('448435',9,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('455357',9,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('455358',9,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('455388',9,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('467893',9,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('467894',9,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('473057',9,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('479935',9,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('479936',9,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('484810',9,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('489308',9,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('493531',9,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('402288',1,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('436480',1,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('436481',1,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('438675',1,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('453966',1,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('461772',1,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('461773',1,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('462286',1,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('476670',1,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('476671',1,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('476672',1,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('492159',1,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('405710',33,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('414170',33,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('430443',33,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('437766',33,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('438289',33,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('438629',33,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('450314',33,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('455344',33,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('459914',33,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('459915',33,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('464025',33,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('491822',33,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('405771',7,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('407419',7,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('407604',7,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('412928',7,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('418590',7,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('418591',7,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('418592',7,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('424943',7,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('425958',7,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('432202',7,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('432203',7,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('432204',7,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('432205',7,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('432206',7,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('432207',7,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('436501',7,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('436506',7,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('437798',7,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('438421',7,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('438595',7,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('438598',7,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('456376',7,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('456377',7,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('461978',7,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('464530',7,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('464532',7,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('464533',7,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('467917',7,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('473819',7,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('490297',7,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('410389',16,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('417924',16,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('438173',16,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('450919',16,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('450920',16,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('465527',16,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('465528',16,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('403265',34,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('429388',34,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('429754',34,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('429755',34,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('437741',34,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('450935',34,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('483551',34,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('496669',34,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('402814',12,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('402815',12,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('404978',12,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('429319',12,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('429320',12,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('436364',12,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('436523',12,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('436533',12,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('443159',12,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('457400',12,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('457401',12,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('457402',12,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('466250',12,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('466254',12,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('467851',12,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('468786',12,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('473111',12,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('483587',12,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('490281',12,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('490282',12,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('402506',11,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('403148',11,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('429312',11,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('429313',11,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('436448',11,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('450590',11,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('452012',11,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('452499',11,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('458581',11,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('458582',11,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('467965',11,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('469332',11,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('470542',11,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('470543',11,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('473452',11,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('400663',13,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('420963',13,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('421344',13,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('423661',13,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('440460',13,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('440461',13,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('451421',13,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('466538',13,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('469567',13,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('400271',14,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('402988',14,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('415568',14,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('417453',14,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('421645',14,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('421659',14,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('421779',14,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('421812',14,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('423173',14,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('423224',14,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('425860',14,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('426532',14,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('428474',14,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('434230',14,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('436319',14,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('436334',14,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('436345',14,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('436346',14,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('457065',14,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('457066',14,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('457070',14,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('462826',14,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('465538',14,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('467784',14,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('467785',14,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('472296',14,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('477026',14,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('477028',14,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('433095',35,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('404183',3,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('404547',3,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('410912',3,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('429322',3,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('430649',3,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('436741',3,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('437599',3,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('451176',3,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('451295',3,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('459248',3,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('462888',3,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('462889',3,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('467870',3,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('467871',3,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('479446',3,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('492138',3,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('492139',3,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('498807',3,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('427183',2,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('428723',2,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('428743',2,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('465885',2,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('465886',2,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('493471',2,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('402500',17,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('419957',17,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('419971',17,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('419972',17,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('427123',17,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('436542',17,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('450481',17,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('469554',17,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('469555',17,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('478670',17,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('479968',17,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('479969',17,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('410709',36,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('418134',36,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('437704',36,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('456306',36,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('466060',36,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('472070',36,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('472698',36,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('489591',36,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('432132',37,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('432133',37,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('432134',37,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('432135',37,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('436522',37,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('445054',37,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('467730',38,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('470546',38,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('467889',39,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('467890',39,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('472722',39,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('409275',40,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('437728',40,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('467803',40,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('469308',41,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('423993',25,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('438521',25,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('466542',25,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('410314',42,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('403149',43,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('458582',43,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('469332',43,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('470542',43,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('470543',43,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('436481',44,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('461772',44,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('462286',44,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('476675',44,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('476676',44,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('476677',44,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('452433',45,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('471247',45,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('476645',45,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('410657',46,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('412773',46,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('419927',46,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('419928',46,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('419945',46,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('481387',47,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('481388',47,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('428751',48,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('452406',48,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('462146',48,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('408002',49,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('472312',30,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('472352',30,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('470736',50,1,getdate())
+insert into MPGSBinList(Bin,BankBinListId,IsActive,CreatedDate) Values('403194',51,1,getdate())
+
+SET IDENTITY_INSERT [dbo].[MPGSBinList] OFF
+PRINT '<< Successful Add data [MPGSBinList] >>';
+
+GO
+
+Truncate TABLE MPGSBankList;
+GO
+SET IDENTITY_INSERT [dbo].[MPGSBankList] ON 
+insert into MPGSBankList(id,bankcode,BankName,IsActive,CreatedDate) values('1','HSBC-X','HSBC BANK MALAYSIA BERHAD',1,getdate())
+insert into MPGSBankList(id,bankcode,BankName,IsActive,CreatedDate) values('2','ABB-X','AFFIN BANK BERHAD',1,getdate())
+insert into MPGSBankList(id,bankcode,BankName,IsActive,CreatedDate) values('3','CIMB-X','CIMB BANK BERHAD',1,getdate())
+insert into MPGSBankList(id,bankcode,BankName,IsActive,CreatedDate) values('4','MBB-X','MAYBANK BANKING BERHAD',1,getdate())
+insert into MPGSBankList(id,bankcode,BankName,IsActive,CreatedDate) values('5','SCB-X','STANDARD CHARTERED BANK BERHAD',1,getdate())
+insert into MPGSBankList(id,bankcode,BankName,IsActive,CreatedDate) values('6','','PAYDEE SDN. BHD.',1,getdate())
+insert into MPGSBankList(id,bankcode,BankName,IsActive,CreatedDate) values('7','CTB-X','CITIBANK BERHAD',1,getdate())
+insert into MPGSBankList(id,bankcode,BankName,IsActive,CreatedDate) values('8','UOB-X','UNITED OVERSEAS BANK (MALAYSIA) BERHAD',1,getdate())
+insert into MPGSBankList(id,bankcode,BankName,IsActive,CreatedDate) values('9','PBB-X','PUBLIC BANK BERHAD',1,getdate())
+insert into MPGSBankList(id,bankcode,BankName,IsActive,CreatedDate) values('10','','DEBIT ISIS',1,getdate())
+insert into MPGSBankList(id,bankcode,BankName,IsActive,CreatedDate) values('11','AMBB-X','AMBANK BERHAD',1,getdate())
+insert into MPGSBankList(id,bankcode,BankName,IsActive,CreatedDate) values('12','HLBB-X','HONG LEONG BANK MALAYSIA BHD',1,getdate())
+insert into MPGSBankList(id,bankcode,BankName,IsActive,CreatedDate) values('13','ABMB-X','ALLIANCE BANK MALAYSIA BERHAD',1,getdate())
+insert into MPGSBankList(id,bankcode,BankName,IsActive,CreatedDate) values('14','RHB-X','RHB BANK BHD',1,getdate())
+insert into MPGSBankList(id,bankcode,BankName,IsActive,CreatedDate) values('15','BSN-X','BANK SIMPANAN NASIONAL',1,getdate())
+insert into MPGSBankList(id,bankcode,BankName,IsActive,CreatedDate) values('16','OCBC-X','OCBC BANK MALAYSIA BERHAD',1,getdate())
+insert into MPGSBankList(id,bankcode,BankName,IsActive,CreatedDate) values('17','BIMB-X','BANK ISLAM MALAYSIA BERHAD',1,getdate())
+insert into MPGSBankList(id,bankcode,BankName,IsActive,CreatedDate) values('18','AEON-X','AEON CREDIT SERVICE (M) BERHAD',1,getdate())
+insert into MPGSBankList(id,bankcode,BankName,IsActive,CreatedDate) values('19','BRB-X','BANK KERJASAMA RAKYAT BERHAD',1,getdate())
+insert into MPGSBankList(id,bankcode,BankName,IsActive,CreatedDate) values('20','BMMB-X','BANK MUAMALAT MALAYSIA BERHAD ',1,getdate())
+insert into MPGSBankList(id,bankcode,BankName,IsActive,CreatedDate) values('21','BIGPAY-X','BIGPAY MALAYSIA SDN BHD',1,getdate())
+insert into MPGSBankList(id,bankcode,BankName,IsActive,CreatedDate) values('22','BCMB-X','BANK OF CHINA (MALAYSIA) BERHAD',1,getdate())
+insert into MPGSBankList(id,bankcode,BankName,IsActive,CreatedDate) values('23','','PREMIA CARDS SDN BHD',1,getdate())
+insert into MPGSBankList(id,bankcode,BankName,IsActive,CreatedDate) values('24','','MANAGEPAY SERVICES SDN BHD',1,getdate())
+insert into MPGSBankList(id,bankcode,BankName,IsActive,CreatedDate) values('25','','FINEXUS CARDS SDN BHD',1,getdate())
+insert into MPGSBankList(id,bankcode,BankName,IsActive,CreatedDate) values('26','','INSTAPAY TECHNOLOGIES SDN BHD',1,getdate())
+insert into MPGSBankList(id,bankcode,BankName,IsActive,CreatedDate) values('27','','BAYO PAY M SDN BHD',1,getdate())
+insert into MPGSBankList(id,bankcode,BankName,IsActive,CreatedDate) values('28','','XOX COM SDN BHD',1,getdate())
+insert into MPGSBankList(id,bankcode,BankName,IsActive,CreatedDate) values('29','','I-SERVE PAYMENT GATEWAY SDN BHD',1,getdate())
+insert into MPGSBankList(id,bankcode,BankName,IsActive,CreatedDate) values('30','','U MOBILE SDN BHD',1,getdate())
+insert into MPGSBankList(id,bankcode,BankName,IsActive,CreatedDate) values('31','','GPAY NETWORK M SDN BHD',1,getdate())
+insert into MPGSBankList(id,bankcode,BankName,IsActive,CreatedDate) values('32','','MOBILITYONE SDN BHD',1,getdate())
+insert into MPGSBankList(id,bankcode,BankName,IsActive,CreatedDate) values('33','UOB-X','UNITED OVERSEAS BANK (MALAYSIA) BERHAD',1,getdate())
+insert into MPGSBankList(id,bankcode,BankName,IsActive,CreatedDate) values('34','SCB-X','STANDARD CHARTERED BANK BERHAD',1,getdate())
+insert into MPGSBankList(id,bankcode,BankName,IsActive,CreatedDate) values('35','','MALAYSIAN ELECTRONIC PAYMENT SYSTEM SDN. BHD.',1,getdate())
+insert into MPGSBankList(id,bankcode,BankName,IsActive,CreatedDate) values('36','AEON-X','AEON CREDIT SERVICES (M) BHD ',1,getdate())
+insert into MPGSBankList(id,bankcode,BankName,IsActive,CreatedDate) values('37','ALRAJH-X','AL RAJHI BANKING AND INVESTMENT CORP',1,getdate())
+insert into MPGSBankList(id,bankcode,BankName,IsActive,CreatedDate) values('38','','SYNERGY CARDS SDN BHD',1,getdate())
+insert into MPGSBankList(id,bankcode,BankName,IsActive,CreatedDate) values('39','','GLOBAL PAYMENTS CARD PROCESSING M SDN BHD',1,getdate())
+insert into MPGSBankList(id,bankcode,BankName,IsActive,CreatedDate) values('40','KFHO-X','KUWAIT FINANCE HOUSE (M) BHD',1,getdate())
+insert into MPGSBankList(id,bankcode,BankName,IsActive,CreatedDate) values('41','BIGPAY-X','BIGPAY MALAYSIA SDN BHD ',1,getdate())
+insert into MPGSBankList(id,bankcode,BankName,IsActive,CreatedDate) values('42','','FIRST DATA MERCHANT SOLUTIONS (MALAYSIA) SDN BHD',1,getdate())
+insert into MPGSBankList(id,bankcode,BankName,IsActive,CreatedDate) values('43','AMIBB-X','AMISLAMIC BANK BERHAD',1,getdate())
+insert into MPGSBankList(id,bankcode,BankName,IsActive,CreatedDate) values('44','HSBCA-X','HSBC AMANAH MALAYSIA BERHAD',1,getdate())
+insert into MPGSBankList(id,bankcode,BankName,IsActive,CreatedDate) values('45','ICBC-X','INDS & COMM BNK OF CHINA M BHD',1,getdate())
+insert into MPGSBankList(id,bankcode,BankName,IsActive,CreatedDate) values('46','AGRO-X','BANK PERTANIAN (AGROBANK)',1,getdate())
+insert into MPGSBankList(id,bankcode,BankName,IsActive,CreatedDate) values('47','PBBI-X','PUBLIC ISLAMIC BANK',1,getdate())
+insert into MPGSBankList(id,bankcode,BankName,IsActive,CreatedDate) values('48','AIBB-X','AFFIN ISLAMIC BANK BHD',1,getdate())
+insert into MPGSBankList(id,bankcode,BankName,IsActive,CreatedDate) values('49','','MERCHANTRADE ASIA SDN BHD  ',1,getdate())
+insert into MPGSBankList(id,bankcode,BankName,IsActive,CreatedDate) values('50','','GHL CARDPAY SDN BHD ',1,getdate())
+insert into MPGSBankList(id,bankcode,BankName,IsActive,CreatedDate) values('51','','STRIPE PAYMENTS MALAYSIA SDN. BHD',1,getdate())
+
+SET IDENTITY_INSERT [dbo].[MPGSBankList] OFF
+PRINT '<< Successful Add data [MPGSBankList] >>';
+
+GO
+/****** Object:  StoredProcedure [dbo].[spGet_MPGSBinCodeBankList]    Script Date: 5/12/2021 6:09:18 PM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+	IF OBJECT_ID('dbo.spGet_MPGSBinCodeBankList') IS NOT NULL
+BEGIN
+    DROP PROCEDURE dbo.spGet_MPGSBinCodeBankList
+    IF OBJECT_ID('dbo.spGet_MPGSBinCodeBankList') IS NOT NULL
+        PRINT '<< FAILED DROP PROCEDURE dbo.spGet_MPGSBinCodeBankList >>'
+    ELSE
+        PRINT '<< SUCCESS DROP PROCEDURE dbo.spGet_MPGSBinCodeBankList >>'
+END
+GO
+
+CREATE PROCEDURE [dbo].[spGet_MPGSBinCodeBankList]
+	@BinCode        VARCHAR(15) = NULL
+
+AS 
+BEGIN
+	SET NOCOUNT ON
+	Declare @Bin varchar(15)
+	Declare @BankCode varchar(20)
+	Declare @BankName varchar(200)
+
+select @Bin = bin.Bin,@BankCode = bankcode,@BankName = BankName  from MPGSBinList bin
+left join MPGSBankList bank on bin.BankBinListId = bank.id
+where bin.bin = @BinCode
+
+if(@Bin is not null)
+BEGIN 
+select @Bin as Bin,@BankCode as BankCode,@BankName as BankName
+END
+ELSE
+BEGIN
+select '' as Bin,'ELX-X' as BankCode,'Other Bank' as BankName
+END
+
+END
+
+GO
+IF OBJECT_ID('dbo.spGet_MPGSBinCodeBankList') IS NOT NULL
+    PRINT '<< CREATED Store Procedure dbo.spGet_MPGSBinCodeBankList >>'
+ELSE
+    PRINT '<< FAILED CREATE Store Procedure dbo.spGet_MPGSBinCodeBankList >>'
+
+
+12-5-2021 - 1.2_CP_change - Foo
+===================================================================================================================================================
+IF NOT EXISTS (SELECT 1 FROM sys.objects 
+WHERE object_id = OBJECT_ID(N'[dbo].[LAFPXBank]') AND type in (N'U'))
+begin
+CREATE TABLE [dbo].[LAFPXBank](
+	[Id] [int] IDENTITY(1,1) NOT NULL PRIMARY KEY,
+	[FpxBankId] [nvarchar](15) NULL,
+	[LABankKey] [nvarchar](15) NULL,
+	[BankName] [nvarchar](250) NULL,
+	[IsActive] [bit] NOT NULL
+);
+PRINT '<< Successful Add table [LAFPXBank] >>';
+end
+ELSE
+PRINT '<< Table [LAFPXBank] already exist >>';
+GO
+
+Truncate TABLE LAFPXBank;
+GO
+SET IDENTITY_INSERT [dbo].[LAFPXBank] ON 
+
+INSERT [dbo].[LAFPXBank] ([Id], [FpxBankId], [LABankKey], [BankName], [IsActive]) VALUES (1, N'ABB0233', N'ABB-F', N'AFFIN BANK BERHAD', 1)
+INSERT [dbo].[LAFPXBank] ([Id], [FpxBankId], [LABankKey], [BankName], [IsActive]) VALUES (2, N'ABMB0212', N'ABMB-F', N'ALLIANCE BANK MALAYSIA BERHAD', 1)
+INSERT [dbo].[LAFPXBank] ([Id], [FpxBankId], [LABankKey], [BankName], [IsActive]) VALUES (3, N'AMBB0209', N'AMBB-F', N'AMBANK MALAYSIA BERHAD', 1)
+INSERT [dbo].[LAFPXBank] ([Id], [FpxBankId], [LABankKey], [BankName], [IsActive]) VALUES (4, N'BIMB0340', N'BIMB-F', N'BANK ISLAM MALAYSIA BERHAD', 1)
+INSERT [dbo].[LAFPXBank] ([Id], [FpxBankId], [LABankKey], [BankName], [IsActive]) VALUES (5, N'BKRM0602', N'BKRM-F', N'BANK KERJASAMA RAKYAT MALAYSIA', 1)
+INSERT [dbo].[LAFPXBank] ([Id], [FpxBankId], [LABankKey], [BankName], [IsActive]) VALUES (6, N'BMMB0341', N'BMMB-F', N'BANK MUAMALAT MALAYSIA BERHAD', 1)
+INSERT [dbo].[LAFPXBank] ([Id], [FpxBankId], [LABankKey], [BankName], [IsActive]) VALUES (7, N'BSN0601', N'BSN-F', N'BANK SIMPANAN NASIONAL', 1)
+INSERT [dbo].[LAFPXBank] ([Id], [FpxBankId], [LABankKey], [BankName], [IsActive]) VALUES (8, N'BCBB0235', N'CIMB-F', N'CIMB BANK BERHAD', 1)
+INSERT [dbo].[LAFPXBank] ([Id], [FpxBankId], [LABankKey], [BankName], [IsActive]) VALUES (9, N'HLB0224', N'HLBB-F', N'HONG LEONG BANK BERHAD', 1)
+INSERT [dbo].[LAFPXBank] ([Id], [FpxBankId], [LABankKey], [BankName], [IsActive]) VALUES (10, N'HSBC0223', N'HSBC-F', N'HSBC BANK BERHAD FPX', 1)
+INSERT [dbo].[LAFPXBank] ([Id], [FpxBankId], [LABankKey], [BankName], [IsActive]) VALUES (11, N'KFH0346', N'KFH-F', N'KUWAIT FINANCE HOUSE (MALAYSIA) BERHAD', 1)
+INSERT [dbo].[LAFPXBank] ([Id], [FpxBankId], [LABankKey], [BankName], [IsActive]) VALUES (12, N'MB2U0227', N'MBB-F', N'MALAYAN BANKING BERHAD', 1)
+INSERT [dbo].[LAFPXBank] ([Id], [FpxBankId], [LABankKey], [BankName], [IsActive]) VALUES (13, N'OCBC0229', N'OCBC-F', N'OCBC BANK MALAYSIA BERHAD', 1)
+INSERT [dbo].[LAFPXBank] ([Id], [FpxBankId], [LABankKey], [BankName], [IsActive]) VALUES (14, N'PBB0233', N'PBB-F', N'PUBLIC BANK BERHAD', 1)
+INSERT [dbo].[LAFPXBank] ([Id], [FpxBankId], [LABankKey], [BankName], [IsActive]) VALUES (15, N'SCB0214', N'SCB-F', N'STANDARD CHARTERED BANK MALAYSIA BERHAD', 1)
+INSERT [dbo].[LAFPXBank] ([Id], [FpxBankId], [LABankKey], [BankName], [IsActive]) VALUES (16, N'UOB0226', N'UOB-F', N'UNITED OVERSEAS BANK', 1)
+INSERT [dbo].[LAFPXBank] ([Id], [FpxBankId], [LABankKey], [BankName], [IsActive]) VALUES (17, N'BNPP0263', N'BNPP-F', N'BNP PARIBAS', 1)
+INSERT [dbo].[LAFPXBank] ([Id], [FpxBankId], [LABankKey], [BankName], [IsActive]) VALUES (18, N'BOFA0207', N'BOFA-F', N'BANK OF AMERICA (M) BERHAD', 1)
+INSERT [dbo].[LAFPXBank] ([Id], [FpxBankId], [LABankKey], [BankName], [IsActive]) VALUES (19, N'BTMU0210', N'BTMU-F', N'BANK OF TOKYO (MUFG)', 1)
+INSERT [dbo].[LAFPXBank] ([Id], [FpxBankId], [LABankKey], [BankName], [IsActive]) VALUES (20, N'CIT0217', N'CITI-F', N'CITIBANK BERHAD', 1)
+INSERT [dbo].[LAFPXBank] ([Id], [FpxBankId], [LABankKey], [BankName], [IsActive]) VALUES (21, N'DBB0219', N'DBB-F', N'DEUTSCHE BANK (MALAYSIA) BERHAD', 1)
+INSERT [dbo].[LAFPXBank] ([Id], [FpxBankId], [LABankKey], [BankName], [IsActive]) VALUES (22, N'ICBC0259', N'ICBC-F', N'INDUSTRIAL AND COMMERCIAL BANK OF CHINA', 1)
+INSERT [dbo].[LAFPXBank] ([Id], [FpxBankId], [LABankKey], [BankName], [IsActive]) VALUES (23, N'JPMC0215', N'JPMC-F', N'J.P MORGAN CHASE BANK', 1)
+INSERT [dbo].[LAFPXBank] ([Id], [FpxBankId], [LABankKey], [BankName], [IsActive]) VALUES (24, N'SMBC0262', N'SMBC-F', N'SUMITOMO MITSUI BANKING CORPORATION', 1)
+INSERT [dbo].[LAFPXBank] ([Id], [FpxBankId], [LABankKey], [BankName], [IsActive]) VALUES (25, N'AGRO3306', N'AGRO-F', N'BANK PERTANIAN (AGROBANK)', 1)
+INSERT [dbo].[LAFPXBank] ([Id], [FpxBankId], [LABankKey], [BankName], [IsActive]) VALUES (26, N'ARM0350', N'ARM-F', N'AL-RAJHI BANK', 1)
+INSERT [dbo].[LAFPXBank] ([Id], [FpxBankId], [LABankKey], [BankName], [IsActive]) VALUES (27, N'BOCM0242', N'BOCM-F', N'BANK OF CHINA (MALAYSIA) BERHAD', 1)
+INSERT [dbo].[LAFPXBank] ([Id], [FpxBankId], [LABankKey], [BankName], [IsActive]) VALUES (28, N'MCBM0261', N'MCBM-F', N'MIZUHO BANK (MALAYSIA) BERHAD', 1)
+INSERT [dbo].[LAFPXBank] ([Id], [FpxBankId], [LABankKey], [BankName], [IsActive]) VALUES (29, N'RHB0218', N'RHB-F', N'RHB BANK BERHAD', 1)
+INSERT [dbo].[LAFPXBank] ([Id], [FpxBankId], [LABankKey], [BankName], [IsActive]) VALUES (30, N'ABB0232', N'ABB-F', N'AFFIN BANK BERHAD', 1)
+INSERT [dbo].[LAFPXBank] ([Id], [FpxBankId], [LABankKey], [BankName], [IsActive]) VALUES (31, N'HSBC0222', N'HSBC-F', N'HSBC BANK BERHAD FPX', 1)
+INSERT [dbo].[LAFPXBank] ([Id], [FpxBankId], [LABankKey], [BankName], [IsActive]) VALUES (32, N'Other', N'ELX-F', N'', 1)
+
+SET IDENTITY_INSERT [dbo].[LAFPXBank] OFF
+PRINT '<< Successful Add data [LAFPXBank] >>';
+
+GO
+/****** Object:  StoredProcedure [dbo].[spGet_ApplicationAccount_By_Id]    Script Date: 5/12/2021 6:09:18 PM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+	IF OBJECT_ID('dbo.spGet_LAFpxBankByFpxBankID') IS NOT NULL
+BEGIN
+    DROP PROCEDURE dbo.spGet_LAFpxBankByFpxBankID
+    IF OBJECT_ID('dbo.spGet_LAFpxBankByFpxBankID') IS NOT NULL
+        PRINT '<< FAILED DROP PROCEDURE dbo.spGet_LAFpxBankByFpxBankID >>'
+    ELSE
+        PRINT '<< SUCCESS DROP PROCEDURE dbo.spGet_LAFpxBankByFpxBankID >>'
+END
+GO
+
+CREATE PROCEDURE [dbo].[spGet_LAFpxBankByFpxBankID]
+	@FpxBankId         VARCHAR(15) = NULL
+
+AS 
+BEGIN
+	SET NOCOUNT ON
+select top 1 [LABankKey],[BankName] from [LAFPXBank]
+		where FpxBankId=@FpxBankId;
+END
+
+GO
+IF OBJECT_ID('dbo.spGet_LAFpxBankByFpxBankID') IS NOT NULL
+    PRINT '<< CREATED Store Procedure dbo.spGet_LAFpxBankByFpxBankID >>'
+ELSE
+    PRINT '<< FAILED CREATE Store Procedure dbo.spGet_LAFpxBankByFpxBankID >>'
+
+
+change clinet statment description  - 4 - 1 - 2020 - Foo
+===================================================================================================================================================
+ALTER PROCEDURE [dbo].[spGet_PaymentTransaction_With_OrderNum_And_TransactionNum]
+	@OrderNum	nvarchar(50),
+	@TransactionNum	nvarchar(50)
+AS
+Begin
+			Select PaymentTransaction.*,ApplicationAccount.Code as ApplicationAccountCode From PaymentTransaction
+			left join ApplicationAccount on ApplicationAccountId = ApplicationAccount.Id
+			where OrderNumber = @OrderNum AND TransactionNumber = @TransactionNum
+			End
+
+31-12-2020 eMandate - Kah Pin
+===================================================================================================================================================
+CREATE TABLE [dbo].[EMandateTransaction](
+	[Id] [int] IDENTITY(1,1) NOT NULL,
+	[TransactionNumber] [nvarchar](50) NULL,
+	[BuyerEmail] [nvarchar](500) NULL,
+	[OrderNumber] [nvarchar](50) NOT NULL,
+	[Amount] [decimal](10, 2) NOT NULL,
+	[CreatedOn] [datetime] NOT NULL,
+	[LastModifiedOn] [datetime] NULL,
+	[ApplicationAccountId] [int] NOT NULL,
+	[PaymentReferenceNumber] [nvarchar](50) NULL,
+	[ReturnUrl] [nvarchar](1000) NOT NULL,
+	[Bank] [nvarchar](500) NULL,
+	[ResponsePayload] [text] NULL,
+	[AuthorizationCode] [nvarchar](50) NULL,
+	[AuthorizationNumber] [nvarchar](50) NULL,
+	[MerchantId] [nvarchar](50) NULL,
+	[AdditionalInfo] [nvarchar](1000) NULL,
+	[Currency] [nvarchar](50) NULL,
+	[IdType] [nvarchar](1) NOT NULL,
+	[IdNo] [nvarchar](18) NOT NULL,
+	[ApplicationType] [nvarchar](2) NOT NULL,
+	[MaxFrequency] [int] NOT NULL,
+	[FrequencyMode] [nvarchar](2) NOT NULL,
+	[ExpiryDate] [datetime] NULL,
+	[PhoneNo] [nvarchar](11) NULL,
+	[Name] [nvarchar](100) NULL,
+	[Descriptions] [nvarchar](200) NULL,
+	[TransactionStatusId] [int] NOT NULL,
+	[MsgToken] [nvarchar](10) NULL,
+	[Mode] [int] NULL,
+	[PaymentRef] nvarchar(50)
+ CONSTRAINT [PK_EMandateTransaction1] PRIMARY KEY CLUSTERED 
+(
+	[Id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+GO
+
+ALTER TABLE [dbo].[EMandateTransaction] ADD  CONSTRAINT [DF_EMandateTransaction_Mode]  DEFAULT ((0)) FOR [Mode]
+GO
+
+CREATE TABLE [dbo].[EMandateLog](
+	[Id] [int] IDENTITY(1,1) NOT NULL,
+	[CreatedOn] [datetime] NOT NULL,
+	[OrderNo] [nvarchar](30) NULL,
+	[URL] [nvarchar](100) NULL,
+	[Request] [nvarchar](4000) NULL,
+	[Response] [nvarchar](4000) NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[Id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+
+ALTER TABLE PaymentTransaction
+   ADD Mode int 
+   CONSTRAINT D_PaymentTransaction_Mode default (0) 
+   WITH VALUES
+GO
+
+CREATE PROCEDURE spGet_EMandateTransaction_By_TransactionNumber
+	@TransactionNumber nvarchar(50)
+AS
+BEGIN
+	select * from [EMandateTransaction]
+		where TransactionNumber=@TransactionNumber;
+END
+GO
+
+CREATE PROCEDURE spGet_EMandateTransaction_By_OrderNumber
+	@OrderNumber nvarchar(50)
+AS
+BEGIN
+	select top 1 * from [EMandateTransaction]
+		where OrderNumber=@OrderNumber
+		order by CreatedOn desc;
+END
+GO
+
+CREATE PROCEDURE spInsert_EMandateLog
+	@OrderNo nvarchar(30),
+	@URL nvarchar(30),
+	@Request nvarchar(4000),
+	@Response nvarchar(4000)
+AS
+BEGIN
+	insert into EMandateLog (
+		CreatedOn,
+		OrderNo,
+		URL,
+		Request,
+		Response
+	)
+	Values(
+		GETDATE(),
+		@OrderNo,
+		@URL,
+		@Request,
+		@Response
+	);
+END
+GO
+
+CREATE PROCEDURE spInsert_EMandateTransaction
+	@ApplicationAccountId int,
+	@Amount decimal(10,2),
+	@TransactionNumber nvarchar(50),
+	@OrderNumber nvarchar(50),
+	@ReturnUrl nvarchar(1000),
+	@MerchantId nvarchar(50),
+	@Currency nvarchar(50),
+	@IdType nvarchar(1),
+	@IdNo nvarchar(18),
+	@ApplicationType nvarchar(2),
+	@MaxFrequency int,
+	@FrequencyMode nvarchar(2),
+	@BuyerEmail nvarchar(500),
+	@Name nvarchar(100),
+	@Desc nvarchar(200),
+	@MobileNo nvarchar(11),
+	@Mode int,
+	@PaymentRef nvarchar(50),
+	@MsgToken nvarchar(2),
+	@TransactionStatusId int
+AS
+BEGIN
+	insert into EMandateTransaction(
+		CreatedOn,
+		ApplicationAccountId,
+		Amount,
+		TransactionNumber,
+		ReturnUrl,
+		OrderNumber,
+		MerchantId,
+		Currency,
+		IdType,
+		IdNo, 
+		ApplicationType,
+		MaxFrequency,
+		FrequencyMode,
+		BuyerEmail,
+		Name,
+		Descriptions,
+		PhoneNo,
+		Mode,
+		PaymentRef,
+		MsgToken,
+		TransactionStatusId
+	)
+	Values(
+		GETDATE(),
+		@ApplicationAccountId,
+		@Amount,
+		@TransactionNumber,
+		@ReturnUrl,
+		@OrderNumber,
+		@MerchantId,
+		@Currency,
+		@IdType,
+		@IdNo,
+		@ApplicationType,
+		@MaxFrequency,
+		@FrequencyMode,
+		@BuyerEmail,
+		@Name,
+		@Desc,
+		@MobileNo,
+		@Mode,
+		@PaymentRef,
+		@MsgToken,
+		@TransactionStatusId
+	);
+END
+GO
+
+CREATE PROCEDURE spUpdate_EMandateTransaction_TransactionStatus
+	@TransactionNumber	nvarchar(50),
+	@PaymentReferenceNumber	nvarchar(50) = null,
+	@Bank	nvarchar(500) = null,
+	@TransactionStatusId	int,
+	@ResponsePayload	text,
+	@AuthorizationCode	nvarchar(50) = null,
+	@AuthorizationNumber	nvarchar(50) = null,
+	@Amount decimal(10,2) = null
+AS
+BEGIN
+	update EMandateTransaction set 
+		[TransactionStatusId]=@TransactionStatusId,
+		[PaymentReferenceNumber]=@PaymentReferenceNumber,
+		[Bank]=IsNull(@Bank,Bank),
+		[LastModifiedOn]=GETDATE(),
+		[ResponsePayload]=@ResponsePayload,
+		[AuthorizationCode]=@AuthorizationCode,
+		[AuthorizationNumber]=@AuthorizationNumber,
+		[Amount]=IsNull(@Amount,Amount)
+	where TransactionNumber = @TransactionNumber
+END
+GO
+
+ALTER PROCEDURE [dbo].[spInsert_PaymentTransaction]
+	@ApplicationAccountId int,
+	@Amount decimal(10,2),
+	@TransactionNumber nvarchar(50),
+	@OrderNumber nvarchar(50),
+	@ReturnUrl nvarchar(1000),
+	@MerchantId nvarchar(50),
+	@PaymentProviderCode nvarchar(50),
+	@Currency nvarchar(50),
+	@IsEnrolment bit,
+	@IsInitialPayment bit,
+	@Mode int,
+	@PaymentRef nvarchar(50),
+	@TransactionStatusId int
+	
+
+AS
+Begin
+	insert into PaymentTransaction(
+		CreatedOn,
+		ApplicationAccountId,
+		Amount,
+		TransactionNumber,
+		ReturnUrl,
+		OrderNumber,
+		MerchantId,
+		PaymentProviderCode,
+		Currency,
+		IsEnrolment,
+		IsInitialPayment,
+		Mode,
+		ProposalId,
+		TransactionStatusId
+	)
+	Values(
+		GETDATE(),
+		@ApplicationAccountId,
+		@Amount,
+		@TransactionNumber,
+		@ReturnUrl,
+		@OrderNumber,
+		@MerchantId,
+		@PaymentProviderCode,
+		@Currency,
+		@IsEnrolment,
+		@IsInitialPayment,
+		@Mode,
+		@PaymentRef,
+		@TransactionStatusId
+		);
+	End
+GO
+
+CREATE PROCEDURE spUpdate_EMandateTransaction_Info
+	@TransactionNumber	nvarchar(50),
+	@BankCode	nvarchar(500),
+	@TransactionStatusId	int
+AS
+BEGIN
+	update EMandateTransaction set 
+		[TransactionStatusId]=case when @TransactionStatusId = 0 then TransactionStatusId else @TransactionStatusId end,
+		[Bank]=IsNull(@BankCode, Bank)
+	where TransactionNumber = @TransactionNumber
+END
+GO
+
+ALTER PROCEDURE [dbo].[spGet_EMandateTransaction_By_OrderNumber]
+	@OrderNumber nvarchar(50)
+AS
+BEGIN
+	select top 1 * from [EMandateTransaction]
+		where OrderNumber=@OrderNumber
+		order by CreatedOn desc;
+END
+GO
+
+===================================================Cut Off 20201108================================================================================
+v1.1 - product fix 19-aug-2020
+===================================================================================================================================================
+Create table FPXLog (
+    [Id] [int] IDENTITY(1,1) NOT NULL,
+	[CreatedOn] [datetime] NOT NULL,
+	[OrderNo] [nvarchar](30) NULL,
+	[URL] [nvarchar](100) NULL,
+	[Request] [nvarchar](4000) NULL,
+	[Response] [nvarchar](4000) NULL
+	PRIMARY KEY (ID)
+	)
+
+	GO
+	Create PROCEDURE [dbo].[spInsert_FPXLog]
+	@OrderNo nvarchar(30),
+	@URL nvarchar(30),
+	@Request nvarchar(4000),
+	@Response nvarchar(4000)
+	
+
+AS
+Begin
+			insert into FPXLog(
+				CreatedOn,
+				OrderNo,
+				URL,
+				Request,
+				Response
+			)
+			Values(
+				GETDATE(),
+				@OrderNo,
+				@URL,
+				@Request,
+				@Response
+				);
+			End
+
+==============================================Cut Off =============================================================================================
+v1.1 - product fix
+===================================================================================================================================================
+alter table applicationAccount 
+add Remark nvarchar(500) null
+
+go
+
+insert into ApplicationAccount(code,SecretKey,remark) values('ESUB','hRvBI6OL3sKzr8','used for Project X')
+
+go
+update PaymentTransaction set ApplicationAccountId = 2 where SUBSTRING(OrderNumber,0,6) = 'E0000' 
+
+===================================================================================================================================================
+v1.1
+GO
+/****** Object:  StoredProcedure [dbo].[spGet_PaymentTransaction_With_OrderNum_And_TransactionNum]    Script Date: 4/16/2020 12:09:06 PM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+
+Create PROCEDURE [dbo].[spGet_PaymentTransaction_With_OrderNum_And_TransactionNum]
+	@OrderNum	nvarchar(50),
+	@TransactionNum	nvarchar(50)
+AS
+Begin
+			Select * From PaymentTransaction
+			where OrderNumber = @OrderNum AND TransactionNumber = @TransactionNum
+			End
+
+
+CREATE TABLE MPGSLog
+( Id int identity(1,1) NOT NULL,
+  CreatedOn datetime NOT NULL,
+  OrderNo nvarchar(30),
+  ApiOperation nvarchar(30),
+  Request nvarchar(4000),
+  Response nvarchar(4000),
+  CONSTRAINT Id_pk PRIMARY KEY (Id)
+);
+
+
+GO
+/****** Object:  StoredProcedure [dbo].[spInsert_PaymentTransaction]    Script Date: 4/16/2020 6:49:59 PM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+
+
+CREATE PROCEDURE [dbo].[spInsert_MPGSLog]
+	@OrderNo nvarchar(30),
+	@ApiOperation nvarchar(30),
+	@Request nvarchar(4000),
+	@Response nvarchar(4000)
+	
+
+AS
+Begin
+			insert into MPGSLog(
+				CreatedOn,
+				OrderNo,
+				ApiOperation,
+				Request,
+				Response
+			)
+			Values(
+				GETDATE(),
+				@OrderNo,
+				@ApiOperation,
+				@Request,
+				@Response
+				
+				);
+			End

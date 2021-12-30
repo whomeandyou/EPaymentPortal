@@ -1,0 +1,13 @@
+@using TMLM.EPayment.BL.PaymentProvider.MPGS
+@model TMLM.EPayment.BL.PaymentProvider.MPGS.GatewayApiRequest
+
+<script src="@ViewBag.JavascriptSessionUrl"></script>
+
+<div class="col-9 pl-4">
+    <h3>@ViewBag.Operation Operation</h3>
+    <p class="endpoint">@ViewBag.Method @ViewBag.RequestUrl</p>
+    <h5>Payload</h5>
+    <pre>@ViewBag.Payload</pre>
+    <h5>Response</h5>
+    <pre>@ViewBag.Response</pre>
+</div>

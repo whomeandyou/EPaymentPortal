@@ -1,0 +1,9 @@
+Steps : 
+1. Execute db.sql. Update Application Account table record if necessary
+2. Change the values in sample.html. (Only update if Application Account record is changed)
+3. Update the FPX values in web.config
+4. Run TMLM.EPayment.WebApi project and open sample.html and click on Submit button
+
+Notes : 
+1. FPX return url is not passed by us. I think is set somewhere in FPX portal
+2. Sample.html is how should other portal call to EPayment portal

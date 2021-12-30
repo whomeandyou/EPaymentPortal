@@ -1,0 +1,86 @@
+@using TMLM.EPayment.WebApi.Gateway
+@model TMLM.EPayment.WebApi.Gateway.GatewayApiRequest
+
+@*<script type="text/javascript">
+        var SimplePay = {
+            operation: function () {
+                return "PAY";
+            },
+            endpoint: function () {
+                return "processHostedSession";
+            },
+            secureIdResponseUrl: function () {
+                return null;
+            }
+        };
+    </script>*@
+
+<!-- APPLY CLICK-JACKING STYLING AND HIDE CONTENTS OF THE PAGE -->
+@*<style id="antiClickjack">
+        body {
+            display: none !important;
+        }
+    </style>*@
+<!-- INCLUDE SESSION.JS JAVASCRIPT LIBRARY -->
+
+
+@*<script src="@ViewBag.JavascriptSessionUrl"></script>*@
+<div class="col-9">
+    <div class="row">
+        <div class="contents col-12">
+            <div class="col-md-12">
+                <h3>Pay</h3>
+               
+                <div class="mb-4">
+                    <h6>Payment details</h6>
+                    <div class="form-group">
+                        <label for='card-number'>Card number:</label>
+                        @*<input type="text" id="card-number" class="form-control input-md" readonly="" required value="5123450000000008">*@
+                        <input asp-for="CardNumber" type="text" id="card-number" class="form-control input-md" required>
+                    </div>
+                    <div class="form-group">
+                        <label for='expiry-month'>Expiry month:</label>
+                        <input asp-for="ExpiryMonth" type="text" id="expiry-month" maxlength="2" class="form-control input-md" required>
+                    </div>
+                    <div class="form-group">
+                        <label for='expiry-year'>Expiry year:</label>
+                        <input asp-for="ExpiryYear" type="text" id="expiry-year" maxlength="4" class="form-control input-md" required>
+                    </div>
+                    <div class="form-group">
+                        <label for='security-code'>Security code:</label>
+                        <input asp-for="SecurityCode" type="text" id="security-code" class="form-control input-md" required>
+                    </div>
+                </div>
+                <div>
+                    <h6>Order details</h6>
+                    <div class="form-group">
+                        <label for='order-id'>Order ID:</label>
+                        <input asp-for="OrderId" type="text" id="order-id" class="form-control input-md">
+                    </div>
+                    <div class="form-group">
+                        <label for='order-amount'>Order amount:</label>
+                        <input asp-for="OrderAmount" type="text" id="order-amount" class="form-control input-md" maxlength="14">
+                    </div>
+                    <div class="form-group">
+                        <label for='order-currency'>Order currency:</label>
+                        <input asp-for="OrderCurrency" type="text" id="order-currency" class="form-control input-md" maxlength="3">
+                    </div>
+                    <div class="form-group">
+                        <label for='order-description'>Description:</label>
+                        <input asp-for="OrderDescription" type="text" id="order-description" class="form-control input-md" maxlength="127">
+                    </div>
+                    <div class="form-group">
+                        <label for='transaction-id'>Transaction ID:</label>
+                        <input asp-for="TransactionId" type="text" id="transaction-id" class="form-control input-md">
+                    </div>
+                    <div id="responseDiv"></div>
+                </div>
+                <button type="submit" class="mt-4 btn btn-primary" id="payButton" onclick="PayJS();">Pay</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@*<script src="/js/hostedSession.js"></script>*@
+<script src="/js/PaymentJS.js"></script>
+

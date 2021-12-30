@@ -1,0 +1,108 @@
+﻿@model PaymentResultVM
+
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+    <title>TOKIO MARINE</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="~/Content/css/bootstrap.css" />
+    <link href="~/Content/css/fpx_styles.css" rel="stylesheet" type="text/css">
+</head>
+
+<body>
+    <div style="max-width: 600px;margin: 0 auto;">
+        <img src="~/Content/img/tokiologo.png" style="max-width:259px;" />
+    </div>
+    <div style="max-width: 600px;margin: 0 auto;">
+        @if (autoRedirect)
+        {
+            <center>Please wait while we process your payment</center>
+        }
+        else
+        {
+            <h4>@Model.Message</h4>
+            <table id="paymentResultTable">
+                <tr>
+                    <td><b>Merchant Name</b></td>
+                    <td> : </td>
+                    <td>Tokio Marine Life Insurance Malaysia Bhd.</td>
+                </tr>
+                <tr>
+                    <td><b>Merchant Transaction ID</b></td>
+                    <td> : </td>
+                    <td>@Model.OrderNo</td>
+                </tr>
+                @if (!string.IsNullOrEmpty(Model.RefNo))
+                {
+                    <tr>
+                        <td><b>FPX Transaction ID</b></td>
+                        <td> : </td>
+                        <td>@Model.RefNo</td>
+                    </tr>
+                }
+                @if (!string.IsNullOrEmpty(Model.Bank))
+                {
+                    <tr>
+                        <td><b>Bank</b></td>
+                        <td> : </td>
+                        <td>@Model.Bank</td>
+                    </tr>
+                }
+                <tr>
+                    <td><b>Total Amount (RM)</b></td>
+                    <td> : </td>
+                    <td>@Model.Amt</td>
+                </tr>
+                @if (!string.IsNullOrEmpty(Model.CreatedOn))
+                {
+                    <tr>
+                        <td><b>FPX Transaction Date</b></td>
+                        <td> : </td>
+                        <td>@Model.CreatedOn</td>
+                    </tr>
+                }
+                @if (!string.IsNullOrEmpty(Model.AuthCode))
+                {
+                    <tr>
+                        <td><b>Authorization Code</b></td>
+                        <td> : </td>
+                        <td>@Model.AuthCode</td>
+                    </tr>
+                }
+            </table>
+        }
+
+        <br /><br />
+        <form name="portalform" method="post" action="@Model.ReturnUrl">
+            @if (!autoRedirect)
+            {
+                <button type="submit">Back to Portal</button>
+            }
+            <input type="hidden" name="OrderNo" value="@Model.OrderNo" />
+            <input type="hidden" name="Amt" value="@Model.Amt" />
+            <input type="hidden" name="AId" value="@Model.AId" />
+            <input type="hidden" name="Status" value="@Model.Status" />
+            <input type="hidden" name="MsgSign" value="@Model.MsgSign" />
+            <input type="hidden" name="Bank" value="@Model.Bank" />
+            <input type="hidden" name="RefNo" value="@Model.RefNo" />
+            <input type="hidden" name="AuthCode" value="@Model.AuthCode" />
+            <input type="hidden" name="AuthNo" value="@Model.AuthNo" />
+        </form>
+    </div>
+
+    <script src="~/Content/js/jquery.js"></script>
+    <script src="~/Content/js/bootstrap.js"></script>
+    @if (autoRedirect)
+    {
+        <script>
+            document.forms["portalform"].submit();
+        </script>
+    }
+</body>
+</html>

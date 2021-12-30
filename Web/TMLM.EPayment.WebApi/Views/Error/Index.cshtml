@@ -1,0 +1,14 @@
+﻿@model ErrorVM
+
+    <center>
+        @if (Model.Code == TMLM.Common.ResponseReturnCode.Gen_Error_Occur)
+        {
+            <p>@Model.Description</p>
+        }
+        else
+        {
+            <p>@Model.Description</p>
+        }
+
+        <p>Please try again and you may now close this browser</p>
+    </center>

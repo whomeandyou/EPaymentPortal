@@ -1,0 +1,250 @@
+﻿@model PaymentSummaryVM
+
+@{
+    Layout = "";
+}
+
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+    <title>TOKIO MARINE</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="~/Content/css/bootstrap.css" />
+    <link href="~/Content/css/fpx_styles.css" rel="stylesheet" type="text/css">
+</head>
+
+<body class="container">
+    <div class="header">
+        <img src="~/Content/img/tokiologo.png" style="max-width:259px;" />
+        <h4 class="form_title hide-on-xs">
+            Payment Confirmation
+        </h4>
+    </div>
+
+    <div>
+        <center style="font-weight:bold;">Time Left : <span id="lblTimer"></span></center>
+        <br /><br />
+        <div>
+            <h4>Merchant Name: <span class="text-value">@Model.MerchantName</span></h4>
+            <h4>Merchant Transaction ID: <span class="text-value">@Model.OrderNumber</span></h4>
+            <h4>Reference Number: <span class="text-value">@Model.ReferenceNumber</span></h4>
+            <h4>Total Amount (RM): <span class="text-value">@Model.TotalAmount</span></h4>
+            <br />
+        </div>
+        <form method="post">
+            <div class="row fpx-row">
+                <div class="col-xs-12 col-sm-4">
+                    <h4 class="text-left">Payment Method</h4>
+                </div>
+                <div class="col-xs-12 col-sm-4 text-left">
+                    <span class="text-value">Online Banking</span>
+                    <img class="fpx-image" src="~/Content/img/fpx_business.gif" alt="FPX" />
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-xs-12 col-sm-4">
+                    <h4 class="text-left">Choose Transaction Type</h4>
+                </div>
+                <div class="col-xs-12 col-sm-4">
+                    <select class="form-control" id="ddl_transactionType" name="TransactionType">
+                        @foreach (var item in Model.AvailableTransactionTypes)
+                        {
+                            <option value="@item.Value">@item.Text</option>
+                        }
+                    </select>
+                </div>
+            </div>
+            <div id="bank-container" class="row" style="display:none;">
+                <div class="col-xs-12 col-sm-4">
+                    <h4 class="text-left">Bank</h4>
+                </div>
+                <div class="col-xs-12 col-sm-4">
+                    <select class="form-control" id="ddl_inv_bank" style="display:none;">
+                        @foreach (var item in Model.AvailableIndividualBanks)
+                        {
+                            <option value="@item.Value">@item.Text</option>
+                        }
+                    </select>
+                    <select class="form-control" id="ddl_cor_bank" style="display:none;">
+                        @foreach (var item in Model.AvailableCorporateBanks)
+                        {
+                            <option value="@item.Value">@item.Text</option>
+                        }
+                    </select>
+                    <input name="BuyerBank" type="hidden" />
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-xs-12 col-sm-4">
+                    <h4 class="text-left">Email (Optional)</h4>
+                </div>
+                <div class="col-xs-12 col-sm-4">
+                    <input type="email" class="form-control" name="BuyerEmail" />
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-xs-12 columnone">
+                    <div class="cardone">
+
+                        <strong>
+                            <input type="checkbox" name="accept" style="width:15px; height:15px;" />&nbsp;&nbsp;
+                            *By checking on the checkbox, you hereby agree with <a href="https://www.mepsfpx.com.my/FPXMain/termsAndConditions.jsp" target="_blank">FPX's Terms and Conditions</a>
+                        </strong>
+                        <strong>
+                            *FPX Operation Hour 24 x 7, more about FPX: <a href="https://www.paynet.my/personal-fpx.html" target="_blank">FPX Information</a>
+                        </strong>
+                        <strong>
+                            *You must have internet banking account in order to make transaction using FPX
+                        </strong>
+                        <strong>
+                            *Please ensure that your browser's pop up blocker has been disabled to avoid any interruption during making transaction.
+                        </strong>
+                        <strong>
+                            *Do not close browser / refresh page until you receive response.
+                        </strong>
+                    </div>
+                </div>
+            </div>
+
+            <div class="btn-row justify-center">
+                @Html.HiddenFor(m => m.AId)
+                @Html.HiddenFor(m => m.TransactionNumber)
+                @Html.HiddenFor(m => m.OrderNumber)
+                @Html.HiddenFor(m => m.TotalAmount)
+                @Html.HiddenFor(m => m.ReturnUrl)
+                @Html.HiddenFor(m => m.Mode)
+                @Html.HiddenFor(m => m.PaymentRef)
+                <button id="btnCancel" type="submit" class="btn btn-primary btn-lg" formaction="@Url.Action("CancelPayment","FPXPayment")">Cancel</button>
+                <button type="submit" class="btn btn-secondary btn-lg save" formaction="@Url.Action("RedirectPayment","FPXPayment")">Proceed</button>
+                <button id="btnTimeout" type="submit" style="display:none;" class="btn btn-primary btn-lg" formaction="@Url.Action("TimeoutPayment","FPXPayment")"></button>
+
+            </div>
+        </form>
+
+
+    </div>
+
+    <script src="~/Content/js/jquery.js"></script>
+    <script src="~/Content/js/bootstrap.js"></script>
+    <script>
+        $(document).ready(function () {
+
+            var $ddl_transactionType = $('#ddl_transactionType');
+            var $invBank = $('#ddl_inv_bank');
+            var $corBank = $('#ddl_cor_bank'); 
+            var $buyerBank = $('[name="BuyerBank"]');
+
+            $ddl_transactionType.on('change', function (e) {
+                var $bankContainer = $('#bank-container');
+
+                if ($ddl_transactionType.val() === '') {
+                    $bankContainer.css('display', 'none');
+                }
+                else {
+                    $bankContainer.css('display', 'block');
+
+                    if ($ddl_transactionType.val() === '01') {
+                        $invBank.css('display', 'block');
+                        $corBank.css('display', 'none');
+                    }
+                    else {
+                        $invBank.css('display', 'none');
+                        $corBank.css('display', 'block');
+                    }
+                }
+            })
+
+            $invBank.on('change', function (e) {
+                $buyerBank.val($invBank.val());
+            })
+
+            $corBank.on('change', function (e) {
+                $buyerBank.val($corBank.val());
+            })
+
+            $('.save').on('click', function (e) {
+                var isValid = true;
+                if ($ddl_transactionType.val() == '') {
+                    $ddl_transactionType.css('border', '1px solid red');
+                    isValid = false
+                }
+                else {
+                    $ddl_transactionType.css('border', '');
+                }
+
+                //validate bank based on transaction type selection
+                if ($ddl_transactionType.val() === '01') {
+					if ($invBank.val() == '') {
+                        $invBank.css('border', '1px solid red');
+                        isValid = false
+                    }
+                    else {
+                        $invBank.css('border', '');
+                    }
+                    $corBank.css('border', '');
+                }
+                else if ($ddl_transactionType.val() === '02') {
+                    if ($corBank.val() == '') {
+                        $corBank.css('border', '1px solid red');
+                        isValid = false
+                    }
+                    else {
+                        $corBank.css('border', '');
+                    }
+                    $invBank.css('border', '');
+                }
+
+                //validation on amount.
+                //requirement by FPX
+                var amount = @Model.TotalAmount.Replace(",", "");
+                if ($ddl_transactionType.val() == '02') {
+                    //company
+                    if (amount < 2 || amount > 1000000) {
+                        alert('Transaction Limit is RM2 to RM1,000,000.');
+                        return false;
+                    }
+                }
+                else if ($ddl_transactionType.val() == '01') {
+                    //individual
+                    if (amount < 1 || amount > 30000) {
+                        alert('Transaction Limit is RM1 to RM30,000.');
+                        return false;
+                    }
+                }
+
+                if (!isValid)
+                    return isValid;
+
+                if (!$('[name="accept"]').prop('checked')) {
+                    alert('Please accept Terms and Conditions to proceed');
+                    return false;
+                }
+            })
+
+            var secondCount = 420; // 7 mins
+            var timerInterval = setInterval(function () {
+                var mins = parseInt(secondCount / 60);
+                var secs = secondCount - (parseInt(secondCount / 60) * 60);
+
+                $('#lblTimer').text(mins + ':' + secs.toString().padStart(2, '0'));
+
+                secondCount--;
+
+                if (secondCount <= 0 && secs == 0) {
+                    clearInterval(timerInterval);
+
+                    alert('Your transaction has timeout. Please try again.');
+                    $('#btnTimeout').trigger('click');
+                }
+            }, 1000);
+        })
+    </script>
+</body>
+
+
+</html>
+

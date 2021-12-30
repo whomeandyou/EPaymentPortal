@@ -1,0 +1,225 @@
+﻿@model EMandateSummaryVM
+
+@{ Layout = ""; }
+
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+    <title>Tokio Marine Life Insurance Malaysia</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" type="image/vnd.microsoft.icon" href="~/Content/img/favicon.ico">
+    <link rel="stylesheet" href="~/Content/bootstrap-customized/css/bootstrap.min.css" />
+    <link href="~/Content/css/fpx_styles.css" rel="stylesheet" type="text/css">
+</head>
+
+<body>
+    <div class="header">
+        <img src="~/Content/img/tokiologo.png" style="max-width:259px;" />
+        <h4 class="form_title hide-on-xs">
+            Enrolment Confirmation
+        </h4>
+    </div>
+
+    <div class="container">
+        <center style="font-weight:bold;">Time Left : <span id="lblTimer"></span></center>
+        <br /><br />
+              <form method="post">
+                  <div class="tmlm-label">
+                      <div class="values header-font">Payor Details</div>
+                  </div>
+                  <div class="tmlm-label">
+                      <div class="values">Name</div>
+                      <div class="values">@Model.Name</div>
+                  </div>
+                  <div class="tmlm-label">
+                      <div class="values">NRIC</div>
+                      <div class="values">@Model.IDNo</div>
+                  </div>
+                  <div class="tmlm-label">
+                      <div class="values">Mobile Phone No.</div>
+                      <div class="values">@Model.MobilePhoneNo</div>
+                  </div>
+                  <div class="tmlm-label">
+                      <div class="values">Email Address</div>
+                      <div class="values">@Model.BuyerEmail</div>
+                  </div>
+                  <div class="tmlm-label">
+                      <div class="values header-font">Payment Details</div>
+                  </div>
+                  <div class="tmlm-label">
+                      <div class="values">Modal Premium</div>
+                      <div class="values">@Model.TotalAmount</div>
+                  </div>
+                  <div class="tmlm-label">
+                      <div class="values">Max Direct Debit Amount *</div>
+                      <div class="values">@string.Format("{0:.00}", (Decimal.Parse(Model.TotalAmount) * Model.AmountMultiplySetting))</div>
+                  </div>
+                  <div class="tmlm-label">
+                      <div class="values text-muted" style="font-size: smaller; padding:0px 10px;">
+                          * Max deduction is Modal Premium x @Model.AmountMultiplySetting &nbsp;
+                          <a data-toggle="collapse" href="#deduction1" role="button" style="font-size:initial">
+                              <span class="glyphicon glyphicon-info-sign"></span>
+                          </a>
+                      </div>
+                  </div>
+                  <div class="tmlm-label">
+                      <div class="values text-muted collapse" style="font-size: smaller" id="deduction1">
+                          The max deduction amount is to cater for any fail deduction happen in a month and to catch up
+                          in subsequent month with 2 monthly premium dues. It also cater for possibility of premium increase so that
+                          it will not interrupt the auto debit. The amount apply is multiplier of two (2) to the premium amount.
+                          Example, if monthly premium amount payable is RM100, we will show max deduction RM200 per mth.
+                      </div>
+                  </div>
+                  <div class="tmlm-label">
+                      <div class="values">Maximum Frequency</div>
+                      <div class="values">@Model.MaxFrequency</div>
+                  </div>
+                  <div class="tmlm-label">
+                      <div class="values">Frequency Mode *</div>
+                      <div class="values">@Model.FrequencyMode</div>
+                  </div>
+                  <div class="tmlm-label">
+                      <div class="values text-muted" style="font-size: smaller; padding:0px 10px;">
+                          * Frequency here is referring to number of time can be debited from the account in case of fail billing.
+                      </div>
+                  </div>
+                  <div class="tmlm-label">
+                      <div class="values">Product Name</div>
+                      <div class="values">@Model.PurposeOfPayment</div>
+                  </div>
+                  <div class="tmlm-label">
+                      <div class="values">Payment Reference No.</div>
+                      @if (Model.Mode == 0 && !string.IsNullOrEmpty(Model.PaymentRef))
+                      {
+                          <div class="values">@Model.PaymentRef</div>
+                      }
+                      else
+                      {
+                          <div class="values">@Model.OrderNumber</div>
+                      }
+
+                  </div>
+                  <div class="tmlm-label">
+                      <div class="values">Payment Mode.</div>
+                      <div class="values">@Model.MsgToken</div>
+                  </div>
+                  <div class="tmlm-label">
+                      <div class="values">Bank</div>
+                      <div class="values">
+                          <select class="form-control" id="ddl_inv_bank">
+                              @foreach (var item in Model.AvailableIndividualBanks)
+                              {
+                                  <option value="@item.Value">@item.Text</option>
+                              }
+                          </select>
+                          <input name="BuyerBank" type="hidden" />
+                      </div>
+                  </div>
+                  <div class="row">
+                      <div class="col-xs-12 columnone tnc-font">
+                          <div class="cardone">
+                              <strong>
+                                  I fully understand and agree to the <a href="javascript:" onclick="window.open('@Request.Url.GetLeftPart(UriPartial.Authority)@Request.ApplicationPath.TrimEnd('/')@Url.Content("/Content/terms-conditions/dd_tc.pdf")', '_blank', 'location=no,height=570,width=520,scrollbars=yes,status=yes'); return false;">Terms & Condition</a>
+                                  of Direct Debit services and I acknowledge that upon successful completion of this online application, RM1.00 shall be debited from my selected account to ensure the said account is active for the purpose of application for this service.
+                                  Please note that Tokio Marine Life Insurance Malaysia Bhd. at its sole discretion may refund the RM1.00 subject to its own Terms & Condition. Please contact Tokio Marine Life Insurance Malaysia Bhd. for further details.
+                              </strong>
+                          </div>
+                      </div>
+                  </div>
+                  <br />
+                  <div class="btn-row justify-center">
+                      @Html.HiddenFor(m => m.AId)
+                      @Html.HiddenFor(m => m.TransactionNumber)
+                      @Html.HiddenFor(m => m.OrderNumber)
+                      @Html.HiddenFor(m => m.TotalAmount)
+                      @Html.HiddenFor(m => m.ReturnUrl)
+                      @Html.HiddenFor(m => m.Mode)
+                      @Html.HiddenFor(m => m.PaymentRef)
+                      @Html.HiddenFor(m => m.PurposeOfPayment)
+                      @Html.HiddenFor(m => m.BuyerEmail)
+                      <button id="btnCancel" type="submit" class="btn btn-primary btn-lg" formaction="@Url.Action("CancelPayment","EMandate")">Cancel</button>
+                      <button type="submit" class="btn btn-secondary btn-lg save" formaction="@Url.Action("RedirectPayment","EMandate")">Proceed</button>
+                      <button id="btnTimeout" type="submit" style="display:none;" class="btn btn-primary btn-lg" formaction="@Url.Action("TimeoutPayment","EMandate")"></button>
+
+                  </div>
+
+              </form>
+
+
+    </div>
+
+    <script src="~/Content/js/jquery.js"></script>
+    <script src="~/Content/bootstrap-customized/js/bootstrap.min.js"></script>
+    <script>
+        $(document).ready(function () {
+
+            var $ddl_transactionType = $('#ddl_transactionType');
+            var $invBank = $('#ddl_inv_bank');
+            var $corBank = $('#ddl_cor_bank');
+            var $buyerBank = $('[name="BuyerBank"]');
+
+            $ddl_transactionType.on('change', function (e) {
+                var $bankContainer = $('#bank-container');
+
+                if ($ddl_transactionType.val() === '') {
+                    $bankContainer.css('display', 'none');
+                }
+                else {
+                    $bankContainer.css('display', 'block');
+
+                    if ($ddl_transactionType.val() === '01') {
+                        $invBank.css('display', 'block');
+                        $corBank.css('display', 'none');
+                    }
+                    else {
+                        $invBank.css('display', 'none');
+                        $corBank.css('display', 'block');
+                    }
+                }
+            })
+
+            $invBank.on('change', function (e) {
+                $buyerBank.val($invBank.val());
+            })
+
+            $corBank.on('change', function (e) {
+                $buyerBank.val($corBank.val());
+            })
+
+            $('.save').on('click', function (e) {
+                if ($invBank.val() == '') {
+                    $invBank.css('border', '1px solid red');
+                    return false;
+                }
+                else {
+                    $invBank.css('border', '');
+                }
+
+            })
+
+            var secondCount = 420; // 7 mins
+            var timerInterval = setInterval(function () {
+                var mins = parseInt(secondCount / 60);
+                var secs = secondCount - (parseInt(secondCount / 60) * 60);
+
+                $('#lblTimer').text(mins + ':' + secs.toString().padStart(2, '0'));
+
+                secondCount--;
+
+                if (secondCount <= 0 && secs == 0) {
+                    clearInterval(timerInterval);
+
+                    alert('Your transaction has timeout. Please try again.');
+                    $('#btnTimeout').trigger('click');
+                }
+            }, 1000);
+        })
+    </script>
+</body>
+
+
+</html>
+

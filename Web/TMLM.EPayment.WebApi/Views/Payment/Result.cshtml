@@ -1,0 +1,216 @@
+﻿@model PaymentResultVM
+
+@{
+    Layout = null;
+
+    var autoRedirect = Model.AId == "TENANG" ? true : false; 
+    //if (
+    //    //Model.Status != TMLM.EPayment.BL.PaymentProvider.PaymentResponseCode.Success.ToString()
+    //    //&& Model.Status != TMLM.EPayment.BL.PaymentProvider.PaymentResponseCode.PendingAuthorization.ToString() &&
+    //    !Model.StayAtSummary)
+    //{
+    //    autoRedirect = true;
+    //}
+}
+
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+    <title>TOKIO MARINE</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="~/Content/css/bootstrap.css" />
+    <link href="~/Content/css/fpx_styles.css" rel="stylesheet" type="text/css">
+</head>
+
+<body>
+    <div class="section-to-print">
+        <div class="printHeader">
+            <img src="~/Content/img/tokiologo.png" style="max-width:259px;" />
+        </div>
+        <div class="setWidth">
+
+            @if (autoRedirect)
+            {
+                <center>Please wait while we process your payment</center>
+            }
+            else
+            {
+                if (Model.Status != TMLM.EPayment.BL.PaymentProvider.PaymentResponseCode.Success.ToString()
+            && Model.Status != TMLM.EPayment.BL.PaymentProvider.PaymentResponseCode.PendingAuthorization.ToString())
+                {
+                    <h4 class="statusColor">Unsuccessful Transaction</h4>
+                    <h4 class="statusColor">Reason : @Model.Message</h4>
+                }
+                else
+                {
+                    <h4>@Model.Message</h4>
+                }
+                <table id="paymentResultTable">
+                    <tr>
+                        <td><b>Merchant Name</b></td>
+                        <td> : </td>
+                        <td>Tokio Marine Life Insurance Malaysia Bhd.</td>
+                    </tr>
+                    <tr>
+                        <td><b>Merchant Transaction ID</b></td>
+                        <td> : </td>
+                        <td>@Model.OrderNo</td>
+                    </tr>
+                    @if (!string.IsNullOrEmpty(Model.RefNo))
+                    {
+                        <tr>
+                            <td><b>FPX Transaction ID</b></td>
+                            <td> : </td>
+                            <td>@Model.RefNo</td>
+                        </tr>
+                    }
+                    @if (!string.IsNullOrEmpty(Model.BankName))
+                    {
+                        <tr>
+                            <td><b>Bank</b></td>
+                            <td> : </td>
+                            <td>@Model.BankName</td>
+                        </tr>
+                    }
+                    <tr>
+                        <td><b>Total Amount (RM)</b></td>
+                        <td> : </td>
+                        <td>@Model.Amt</td>
+                    </tr>
+                    @if (!string.IsNullOrEmpty(Model.CreatedOn))
+                    {
+                        <tr>
+                            <td><b>FPX Transaction Date</b></td>
+                            <td> : </td>
+                            <td>@Model.CreatedOn</td>
+                        </tr>
+                    }
+                    @if (!string.IsNullOrEmpty(Model.AuthCode))
+                    {
+                        <tr>
+                            <td><b>Authorization Code</b></td>
+                            <td> : </td>
+                            <td>@Model.AuthCode</td>
+                        </tr>
+                    }
+                </table>
+            }
+        </div>
+    </div>
+
+    <br /><br />
+    <div class="setWidth">
+        @if (Model.Mode == 0)
+        {
+        <form name="portalform" method="post" action="@Model.ReturnUrl">
+
+            @if (!autoRedirect)
+            {
+                if (!string.IsNullOrEmpty(Model.AuthCode))
+                {
+                    <div>
+                        <label class="back-portal-note">Please save or record the FPX Transaction ID for your future reference</label>
+                    </div>
+                }
+                <div>
+                    <button type="submit" style="display:inline-block">Back to Portal</button>
+                    <input type="button" value="Print" onclick="javascript:window.print()" style="display:inline-block" />
+                    <label class="print-note">**Go Green. Think Before Printing**</label>
+                </div>
+            }
+
+            <input type="hidden" name="OrderNo" value="@Model.OrderNo" />
+            <input type="hidden" name="Amt" value="@Model.Amt" />
+            <input type="hidden" name="AId" value="@Model.AId" />
+            <input type="hidden" name="Status" value="@Model.Status" />
+            <input type="hidden" name="MsgSign" value="@Model.MsgSign" />
+            <input type="hidden" name="Bank" value="@Model.Bank" />
+            <input type="hidden" name="RefNo" value="@Model.RefNo" />
+            <input type="hidden" name="AuthCode" value="@Model.AuthCode" />
+            <input type="hidden" name="AuthNo" value="@Model.AuthNo" />
+            <input type="hidden" name="PaymentRef" value="@Model.PaymentRef" />
+            <input type="hidden" name="LABankKey" value="@Model.LABankKey" />
+            <input type="hidden" name="LABankName" value="@Model.LABankName" />
+        </form>
+        }
+        else
+        {
+        <form name="portalform-remote" method="post" action="@Model.ReturnUrl">
+            @if (!string.IsNullOrEmpty(Model.AuthCode))
+            {
+                <div class="back-portal-note" style="margin-bottom:35px;">Please save or record the FPX Transaction ID for your future reference
+                    <button class="btn btn-link" onclick="screenshotAndSave()" style="display:inline-block;margin-left:10px;margin-right:20px;">Take Screenshot</button>
+                </div>
+            }
+            <div>
+                <button class="btn btn-primary" type="submit" style="display:inline-block;margin-left:10px;">Back to Portal <span id="lblTimer"></span></button>
+
+                <!--<label class="print-note">**Go Green. Think Before Printing**</label>-->
+            </div>
+            <input type="hidden" name="OrderNo" value="@Model.OrderNo" />
+            <input type="hidden" name="Amt" value="@Model.Amt" />
+            <input type="hidden" name="AId" value="@Model.AId" />
+            <input type="hidden" name="Status" value="@Model.Status" />
+            <input type="hidden" name="MsgSign" value="@Model.MsgSign" />
+            <input type="hidden" name="Bank" value="@Model.Bank" />
+            <input type="hidden" name="RefNo" value="@Model.RefNo" />
+            <input type="hidden" name="AuthCode" value="@Model.AuthCode" />
+            <input type="hidden" name="AuthNo" value="@Model.AuthNo" />
+            <input type="hidden" name="PaymentRef" value="@Model.PaymentRef" />
+            <input type="hidden" name="LABankKey" value="@Model.LABankKey" />
+            <input type="hidden" name="LABankName" value="@Model.LABankName" />
+        </form>
+        }
+
+    </div>
+
+    <script src="~/Content/js/jquery.js"></script>
+    <script src="~/Content/js/bootstrap.js"></script>
+    @if (Model.Mode == 0)
+    {
+        if (autoRedirect)
+        {
+            <script>
+                document.forms["portalform"].submit();
+            </script>
+        }
+    }
+    else
+    {
+        <script src="~/Content/html2canvas/html2canvas.min.js"></script>
+        <script src="~/Content/canvas2image/canvas2image.js"></script>
+        <script type="text/javascript">
+            function screenshotAndSave() {
+                var filename = '@Model.OrderNo' + '_' + Date.now();
+                event.preventDefault();
+                html2canvas(document.querySelector('.section-to-print'), {
+                    onrendered: function (canvas) {
+                        return Canvas2Image.saveAsPNG(canvas, undefined, undefined, filename);
+                    }
+                });
+            }
+
+            var secondCount = 30;
+            var timerInterval = setInterval(function () {
+                var secs = secondCount - (parseInt(secondCount / 60) * 60);
+
+                $('#lblTimer').text('(Redirecting in ' +secs.toString().padStart(2, '0') + ' sec...)');
+
+                secondCount--;
+
+                if (secondCount <= 0 && secs == 0) {
+                    clearInterval(timerInterval);
+
+                    document.forms["portalform-remote"].submit();
+                }
+            }, 1000);
+
+            
+        </script>
+    }
+
+
+    </body>
+</html>

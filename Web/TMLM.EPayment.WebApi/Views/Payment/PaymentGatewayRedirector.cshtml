@@ -1,0 +1,15 @@
+﻿@{ 
+    Layout = null;
+}
+
+@model PaymentGatewayRedirectorVM
+
+
+<center>Please wait while we redirecting you to payment gateway</center>
+
+@Html.Raw(Model.FormHtml)
+
+
+<script>
+    document.getElementsByTagName("FORM")[0].submit();
+</script>
